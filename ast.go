@@ -1,5 +1,7 @@
 package javast
 
+import "io"
+
 // A Kind enumerates all kinds of nodes.
 type Kind int
 
@@ -209,8 +211,8 @@ const (
 
 // Common interface for all nodes in an abstract syntax tree.
 type Node interface {
+	io.WriterTo
 	GetKind() Kind
-	Accept(*Visitor)
 }
 
 // A tree node for an array type.
@@ -390,7 +392,7 @@ type MemberReferenceNode interface {
 	ExpressionNode
 	GetMode() ReferenceMode                 // Returns the mode of the reference.
 	GetQualifierExpression() ExpressionNode // Returns the qualifier expression for the reference.
-	GetName() string                        // Returns the name of the reference.
+	GetName() *string                       // Returns the name of the reference.
 	GetTypeArguments() []ExpressionNode     // Returns the type arguments for the reference.
 	memberReferenceNode()                   // memberReference() ensures that only member reference nodes can be assigned to a MemberReferenceNode.
 }
@@ -822,8 +824,8 @@ type ClassNode interface {
 //	continue label ;
 type ContinueNode interface {
 	StatementNode
-	GetLabel() string // Returns the label for this "continue" statement.
-	continueNode()    // continueNode() ensures that only continue nodes can be assigned to a ContinueNode.
+	GetLabel() *string // Returns the label for this "continue" statement.
+	continueNode()     // continueNode() ensures that only continue nodes can be assigned to a ContinueNode.
 }
 
 // A tree node for a "do" statement.

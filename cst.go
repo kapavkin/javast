@@ -1,15 +1,12 @@
 package javast
 
-import "fmt"
-
 // Implements [AnnotatedTypeNode].
 type AnnotatedType struct {
 	Annotations    []AnnotationNode
 	UnderlyingType ExpressionNode
 }
 
-func (*AnnotatedType) GetKind() Kind        { return ANNOTATED_TYPE }
-func (at *AnnotatedType) Accept(v *Visitor) { (*v).Visit(at) }
+func (*AnnotatedType) GetKind() Kind { return ANNOTATED_TYPE }
 
 func (at *AnnotatedType) GetAnnotations() []AnnotationNode  { return at.Annotations }
 func (at *AnnotatedType) GetUnderlyingType() ExpressionNode { return at.UnderlyingType }
@@ -24,8 +21,7 @@ type Annotation struct {
 	Arguments      []ExpressionNode
 }
 
-func (*Annotation) GetKind() Kind       { return ANNOTATION }
-func (a *Annotation) Accept(v *Visitor) { (*v).Visit(a) }
+func (*Annotation) GetKind() Kind { return ANNOTATION }
 
 func (a *Annotation) GetAnnotationType() Node        { return a.AnnotationType }
 func (a *Annotation) GetArguments() []ExpressionNode { return a.Arguments }
@@ -40,8 +36,7 @@ type TypeAnnotation struct {
 	Arguments      []ExpressionNode
 }
 
-func (*TypeAnnotation) GetKind() Kind        { return TYPE_ANNOTATION }
-func (ta *TypeAnnotation) Accept(v *Visitor) { (*v).Visit(ta) }
+func (*TypeAnnotation) GetKind() Kind { return TYPE_ANNOTATION }
 
 func (ta *TypeAnnotation) GetAnnotationType() Node        { return ta.AnnotationType }
 func (ta *TypeAnnotation) GetArguments() []ExpressionNode { return ta.Arguments }
@@ -56,8 +51,7 @@ type ArrayAccess struct {
 	Index      ExpressionNode
 }
 
-func (*ArrayAccess) GetKind() Kind        { return ARRAY_ACCESS }
-func (aa *ArrayAccess) Accept(v *Visitor) { (*v).Visit(aa) }
+func (*ArrayAccess) GetKind() Kind { return ARRAY_ACCESS }
 
 func (aa *ArrayAccess) GetExpression() ExpressionNode { return aa.Expression }
 func (aa *ArrayAccess) GetIndex() ExpressionNode      { return aa.Index }
@@ -71,8 +65,7 @@ type ArrayType struct {
 	Type Node
 }
 
-func (*ArrayType) GetKind() Kind        { return ARRAY_TYPE }
-func (at *ArrayType) Accept(v *Visitor) { (*v).Visit(at) }
+func (*ArrayType) GetKind() Kind { return ARRAY_TYPE }
 
 func (at *ArrayType) GetType() Node { return at.Type }
 
@@ -84,8 +77,7 @@ type Assert struct {
 	Detail    *ExpressionNode
 }
 
-func (*Assert) GetKind() Kind       { return ASSERT }
-func (a *Assert) Accept(v *Visitor) { (*v).Visit(a) }
+func (*Assert) GetKind() Kind { return ASSERT }
 
 func (a *Assert) GetCondition() ExpressionNode { return a.Condition }
 func (a *Assert) GetDetail() *ExpressionNode   { return a.Detail }
@@ -99,8 +91,7 @@ type Assignment struct {
 	Expression ExpressionNode
 }
 
-func (*Assignment) GetKind() Kind       { return ASSIGNMENT }
-func (a *Assignment) Accept(v *Visitor) { (*v).Visit(a) }
+func (*Assignment) GetKind() Kind { return ASSIGNMENT }
 
 func (a *Assignment) GetVariable() ExpressionNode   { return a.Variable }
 func (a *Assignment) GetExpression() ExpressionNode { return a.Expression }
@@ -115,8 +106,7 @@ type Block struct {
 	Statements []StatementNode
 }
 
-func (*Block) GetKind() Kind       { return BLOCK }
-func (b *Block) Accept(v *Visitor) { (*v).Visit(b) }
+func (*Block) GetKind() Kind { return BLOCK }
 
 func (b *Block) IsStatic() bool                 { return b.Static }
 func (b *Block) GetStatements() []StatementNode { return b.Statements }
@@ -129,33 +119,50 @@ type Break struct {
 	Label *string
 }
 
-func (*Break) GetKind() Kind       { return BREAK }
-func (b *Break) Accept(v *Visitor) { (*v).Visit(b) }
+func (*Break) GetKind() Kind { return BREAK }
 
 func (b *Break) GetLabel() *string { return b.Label }
 
 func (*Break) statementNode() {}
 func (*Break) breakNode()     {}
 
-// Implements [CaseNode].
-type Case struct {
-	Expressions []ExpressionNode
-	Labels      []CaseLabelNode
-	Statements  []StatementNode
-	Body        *Node
-	CaseKind    CaseKind
+// Implements [CaseNode] of kind [STATEMENT_CASE_KIND].
+type StatementCase struct {
+	Expression *ExpressionNode
+	Statements []StatementNode
 }
 
-func (*Case) GetKind() Kind       { return CASE }
-func (c *Case) Accept(v *Visitor) { (*v).Visit(c) }
+func (*StatementCase) GetKind() Kind { return CASE }
 
-func (c *Case) GetExpressions() []ExpressionNode { return c.Expressions }
-func (c *Case) GetLabels() []CaseLabelNode       { return c.Labels }
-func (c *Case) GetStatements() []StatementNode   { return c.Statements }
-func (c *Case) GetBody() *Node                   { return c.Body }
-func (c *Case) GetCaseKind() CaseKind            { return c.CaseKind }
+func (sc *StatementCase) GetExpressions() []ExpressionNode {
+	if sc.Expression != nil {
+		return []ExpressionNode{*sc.Expression}
+	}
+	return []ExpressionNode{}
+}
 
-func (*Case) caseNode() {}
+func (sc *StatementCase) GetLabels() []CaseLabelNode     { return nil }
+func (sc *StatementCase) GetStatements() []StatementNode { return sc.Statements }
+func (*StatementCase) GetBody() *Node                    { return nil }
+func (*StatementCase) GetCaseKind() CaseKind             { return STATEMENT_CASE_KIND }
+
+func (*StatementCase) caseNode() {}
+
+// Implements [CaseNode] of kind [RULE_CASE_KIND].
+type RuleCase struct {
+	Labels []CaseLabelNode
+	Body   Node
+}
+
+func (*RuleCase) GetKind() Kind { return CASE }
+
+func (rc *RuleCase) GetExpressions() []ExpressionNode { return nil }
+func (rc *RuleCase) GetLabels() []CaseLabelNode       { return rc.Labels }
+func (rc *RuleCase) GetStatements() []StatementNode   { return nil }
+func (rc *RuleCase) GetBody() *Node                   { return &rc.Body }
+func (rc *RuleCase) GetCaseKind() CaseKind            { return RULE_CASE_KIND }
+
+func (*RuleCase) caseNode() {}
 
 // Implements [CatchNode].
 type Catch struct {
@@ -163,8 +170,7 @@ type Catch struct {
 	Block     BlockNode
 }
 
-func (*Catch) GetKind() Kind       { return CATCH }
-func (c *Catch) Accept(v *Visitor) { (*v).Visit(c) }
+func (*Catch) GetKind() Kind { return CATCH }
 
 func (c *Catch) GetParameter() VariableNode { return c.Parameter }
 func (c *Catch) GetBlock() BlockNode        { return c.Block }
@@ -178,19 +184,17 @@ type Class struct {
 	TypeParameters   []TypeParameterNode
 	ExtendsClause    *Node
 	ImplementsClause []Node
-	PermitsClause    []Node
 	Members          []Node
 }
 
-func (*Class) GetKind() Kind       { return CLASS }
-func (c *Class) Accept(v *Visitor) { (*v).Visit(c) }
+func (*Class) GetKind() Kind { return CLASS }
 
 func (c *Class) GetModifiers() ModifiersNode            { return c.Modifiers }
 func (c *Class) GetSimpleName() string                  { return c.SimpleName }
 func (c *Class) GetTypeParameters() []TypeParameterNode { return c.TypeParameters }
 func (c *Class) GetExtendsClause() *Node                { return c.ExtendsClause }
 func (c *Class) GetImplementsClause() []Node            { return c.ImplementsClause }
-func (c *Class) GetPermitsClause() []Node               { return c.PermitsClause }
+func (c *Class) GetPermitsClause() []Node               { return nil }
 func (c *Class) GetMembers() []Node                     { return c.Members }
 
 func (*Class) statementNode() {}
@@ -206,8 +210,7 @@ type CompilationUnit struct {
 	TypeDecls          []Node
 }
 
-func (*CompilationUnit) GetKind() Kind        { return COMPILATION_UNIT }
-func (cu *CompilationUnit) Accept(v *Visitor) { (*v).Visit(cu) }
+func (*CompilationUnit) GetKind() Kind { return COMPILATION_UNIT }
 
 func (cu *CompilationUnit) GetModule() *ModuleNode                  { return cu.Module }
 func (cu *CompilationUnit) GetPackageAnnotations() []AnnotationNode { return cu.PackageAnnotations }
@@ -225,8 +228,7 @@ type ConditionalExpression struct {
 	FalseExpression ExpressionNode
 }
 
-func (*ConditionalExpression) GetKind() Kind        { return CONDITIONAL_EXPRESSION }
-func (cx *ConditionalExpression) Accept(v *Visitor) { (*v).Visit(cx) }
+func (*ConditionalExpression) GetKind() Kind { return CONDITIONAL_EXPRESSION }
 
 func (cx *ConditionalExpression) GetCondition() ExpressionNode       { return cx.Condition }
 func (cx *ConditionalExpression) GetTrueExpression() ExpressionNode  { return cx.TrueExpression }
@@ -238,13 +240,12 @@ func (*ConditionalExpression) conditionalExpressionNode() {}
 
 // Implements [ContinueNode].
 type Continue struct {
-	Label string
+	Label *string
 }
 
-func (*Continue) GetKind() Kind       { return CONTINUE }
-func (c *Continue) Accept(v *Visitor) { (*v).Visit(c) }
+func (*Continue) GetKind() Kind { return CONTINUE }
 
-func (c *Continue) GetLabel() string { return c.Label }
+func (c *Continue) GetLabel() *string { return c.Label }
 
 func (*Continue) statementNode() {}
 func (*Continue) continueNode()  {}
@@ -255,8 +256,7 @@ type DoWhileLoop struct {
 	Statement StatementNode
 }
 
-func (*DoWhileLoop) GetKind() Kind         { return DO_WHILE_LOOP }
-func (dwl *DoWhileLoop) Accept(v *Visitor) { (*v).Visit(dwl) }
+func (*DoWhileLoop) GetKind() Kind { return DO_WHILE_LOOP }
 
 func (dwl *DoWhileLoop) GetCondition() ExpressionNode { return dwl.Condition }
 func (dwl *DoWhileLoop) GetStatement() StatementNode  { return dwl.Statement }
@@ -271,8 +271,7 @@ type EnhancedForLoop struct {
 	Statement  StatementNode
 }
 
-func (*EnhancedForLoop) GetKind() Kind         { return ENHANCED_FOR_LOOP }
-func (efl *EnhancedForLoop) Accept(v *Visitor) { (*v).Visit(efl) }
+func (*EnhancedForLoop) GetKind() Kind { return ENHANCED_FOR_LOOP }
 
 func (efl *EnhancedForLoop) GetVariable() VariableNode     { return efl.Variable }
 func (efl *EnhancedForLoop) GetExpression() ExpressionNode { return efl.Expression }
@@ -286,8 +285,7 @@ type ExpressionStatement struct {
 	Expression ExpressionNode
 }
 
-func (*ExpressionStatement) GetKind() Kind        { return EXPRESSION_STATEMENT }
-func (xs *ExpressionStatement) Accept(v *Visitor) { (*v).Visit(xs) }
+func (*ExpressionStatement) GetKind() Kind { return EXPRESSION_STATEMENT }
 
 func (xs *ExpressionStatement) GetExpression() ExpressionNode { return xs.Expression }
 
@@ -300,8 +298,7 @@ type MemberSelect struct {
 	Identifier string
 }
 
-func (*MemberSelect) GetKind() Kind        { return MEMBER_SELECT }
-func (ms *MemberSelect) Accept(v *Visitor) { (*v).Visit(ms) }
+func (*MemberSelect) GetKind() Kind { return MEMBER_SELECT }
 
 func (ms *MemberSelect) GetExpression() ExpressionNode { return ms.Expression }
 func (ms *MemberSelect) GetIdentifier() string         { return ms.Identifier }
@@ -310,25 +307,48 @@ func (*MemberSelect) caseLabelNode()    {}
 func (*MemberSelect) expressionNode()   {}
 func (*MemberSelect) memberSelectNode() {}
 
-// Implements [MemberReferenceNode].
-type MemberReference struct {
-	Mode                ReferenceMode
+// Implements [MemberReferenceNode] of mode [INVOKE_REFERENCE_MODE].
+type InvokeMemberReference struct {
 	QualifierExpression ExpressionNode
 	Name                string
 	TypeArguments       []ExpressionNode
 }
 
-func (*MemberReference) GetKind() Kind        { return MEMBER_REFERENCE }
-func (mr *MemberReference) Accept(v *Visitor) { (*v).Visit(mr) }
+func (*InvokeMemberReference) GetKind() Kind { return MEMBER_REFERENCE }
 
-func (mr *MemberReference) GetMode() ReferenceMode                 { return mr.Mode }
-func (mr *MemberReference) GetQualifierExpression() ExpressionNode { return mr.QualifierExpression }
-func (mr *MemberReference) GetName() string                        { return mr.Name }
-func (mr *MemberReference) GetTypeArguments() []ExpressionNode     { return mr.TypeArguments }
+func (imr *InvokeMemberReference) GetMode() ReferenceMode { return INVOKE_REFERENCE_MODE }
 
-func (*MemberReference) caseLabelNode()       {}
-func (*MemberReference) expressionNode()      {}
-func (*MemberReference) memberReferenceNode() {}
+func (imr *InvokeMemberReference) GetQualifierExpression() ExpressionNode {
+	return imr.QualifierExpression
+
+}
+func (imr *InvokeMemberReference) GetName() *string                   { return &imr.Name }
+func (imr *InvokeMemberReference) GetTypeArguments() []ExpressionNode { return imr.TypeArguments }
+
+func (*InvokeMemberReference) caseLabelNode()       {}
+func (*InvokeMemberReference) expressionNode()      {}
+func (*InvokeMemberReference) memberReferenceNode() {}
+
+// Implements [MemberReferenceNode] of mode [NEW_REFERENCE_MODE].
+type NewMemberReference struct {
+	QualifierExpression ExpressionNode
+	TypeArguments       []ExpressionNode
+}
+
+func (*NewMemberReference) GetKind() Kind { return MEMBER_REFERENCE }
+
+func (nmr *NewMemberReference) GetMode() ReferenceMode { return NEW_REFERENCE_MODE }
+
+func (nmr *NewMemberReference) GetQualifierExpression() ExpressionNode {
+	return nmr.QualifierExpression
+}
+
+func (nmr *NewMemberReference) GetName() *string                   { return nil }
+func (nmr *NewMemberReference) GetTypeArguments() []ExpressionNode { return nmr.TypeArguments }
+
+func (*NewMemberReference) caseLabelNode()       {}
+func (*NewMemberReference) expressionNode()      {}
+func (*NewMemberReference) memberReferenceNode() {}
 
 // Implements [ForLoopNode].
 type ForLoop struct {
@@ -338,8 +358,7 @@ type ForLoop struct {
 	Statement   StatementNode
 }
 
-func (*ForLoop) GetKind() Kind        { return FOR_LOOP }
-func (fl *ForLoop) Accept(v *Visitor) { (*v).Visit(fl) }
+func (*ForLoop) GetKind() Kind { return FOR_LOOP }
 
 func (fl *ForLoop) GetInitializer() []StatementNode      { return fl.Initializer }
 func (fl *ForLoop) GetCondition() *ExpressionNode        { return fl.Condition }
@@ -354,8 +373,7 @@ type Identifier struct {
 	Name string
 }
 
-func (*Identifier) GetKind() Kind       { return IDENTIFIER }
-func (i *Identifier) Accept(v *Visitor) { (*v).Visit(i) }
+func (*Identifier) GetKind() Kind { return IDENTIFIER }
 
 func (i *Identifier) GetName() string { return i.Name }
 
@@ -370,8 +388,7 @@ type If struct {
 	ElseStatement *StatementNode
 }
 
-func (*If) GetKind() Kind       { return IF }
-func (i *If) Accept(v *Visitor) { (*v).Visit(i) }
+func (*If) GetKind() Kind { return IF }
 
 func (i *If) GetCondition() ExpressionNode     { return i.Condition }
 func (i *If) GetThenStatement() StatementNode  { return i.ThenStatement }
@@ -386,8 +403,7 @@ type Import struct {
 	QualifiedIdentifier Node
 }
 
-func (*Import) GetKind() Kind       { return IMPORT }
-func (i *Import) Accept(v *Visitor) { (*v).Visit(i) }
+func (*Import) GetKind() Kind { return IMPORT }
 
 func (i *Import) IsStatic() bool               { return i.Static }
 func (i *Import) GetQualifiedIdentifier() Node { return i.QualifiedIdentifier }
@@ -401,8 +417,7 @@ type InstanceOf struct {
 	Pattern    *PatternNode
 }
 
-func (*InstanceOf) GetKind() Kind        { return INSTANCE_OF }
-func (io *InstanceOf) Accept(v *Visitor) { (*v).Visit(io) }
+func (*InstanceOf) GetKind() Kind { return INSTANCE_OF }
 
 func (io *InstanceOf) GetExpression() ExpressionNode { return io.Expression }
 func (io *InstanceOf) GetType() Node                 { return io.Type }
@@ -418,8 +433,7 @@ type LabeledStatement struct {
 	Statement StatementNode
 }
 
-func (*LabeledStatement) GetKind() Kind        { return LABELED_STATEMENT }
-func (ls *LabeledStatement) Accept(v *Visitor) { (*v).Visit(ls) }
+func (*LabeledStatement) GetKind() Kind { return LABELED_STATEMENT }
 
 func (ls *LabeledStatement) GetLabel() string            { return ls.Label }
 func (ls *LabeledStatement) GetStatement() StatementNode { return ls.Statement }
@@ -440,8 +454,7 @@ type Method struct {
 	DefaultValue      *Node
 }
 
-func (*Method) GetKind() Kind       { return METHOD }
-func (m *Method) Accept(v *Visitor) { (*v).Visit(m) }
+func (*Method) GetKind() Kind { return METHOD }
 
 func (m *Method) GetModifiers() ModifiersNode            { return m.Modifiers }
 func (m *Method) GetName() string                        { return m.Name }
@@ -462,8 +475,7 @@ type MethodInvocation struct {
 	Arguments     []ExpressionNode
 }
 
-func (*MethodInvocation) GetKind() Kind        { return METHOD_INVOCATION }
-func (mi *MethodInvocation) Accept(v *Visitor) { (*v).Visit(mi) }
+func (*MethodInvocation) GetKind() Kind { return METHOD_INVOCATION }
 
 func (mi *MethodInvocation) GetTypeArguments() []Node        { return mi.TypeArguments }
 func (mi *MethodInvocation) GetMethodSelect() ExpressionNode { return mi.MethodSelect }
@@ -479,8 +491,7 @@ type Modifiers struct {
 	Annotations []AnnotationNode
 }
 
-func (*Modifiers) GetKind() Kind       { return MODIFIERS }
-func (m *Modifiers) Accept(v *Visitor) { (*v).Visit(m) }
+func (*Modifiers) GetKind() Kind { return MODIFIERS }
 
 func (m *Modifiers) GetFlags() []Modifier { return m.Flags }
 
@@ -497,8 +508,7 @@ type NewArray struct {
 	DimAnnotations [][]AnnotationNode
 }
 
-func (*NewArray) GetKind() Kind        { return NEW_ARRAY }
-func (na *NewArray) Accept(v *Visitor) { (*v).Visit(na) }
+func (*NewArray) GetKind() Kind { return NEW_ARRAY }
 
 func (na *NewArray) GetType() *Node                        { return na.Type }
 func (na *NewArray) GetDimensions() []ExpressionNode       { return na.Dimensions }
@@ -519,8 +529,7 @@ type NewClass struct {
 	ClassBody           *ClassNode
 }
 
-func (*NewClass) GetKind() Kind        { return NEW_CLASS }
-func (nc *NewClass) Accept(v *Visitor) { (*v).Visit(nc) }
+func (*NewClass) GetKind() Kind { return NEW_CLASS }
 
 func (nc *NewClass) GetEnclosingExpression() *ExpressionNode { return nc.EnclosingExpression }
 func (nc *NewClass) GetTypeArguments() []Node                { return nc.TypeArguments }
@@ -532,23 +541,37 @@ func (*NewClass) caseLabelNode()  {}
 func (*NewClass) expressionNode() {}
 func (*NewClass) newClassNode()   {}
 
-// Implements [LambdaExpressionNode].
-type LambdaExpression struct {
+// Implements [LambdaExpressionNode] of kind [EXPRESSION_BODY_KIND].
+type ExpressionLambdaExpression struct {
 	Parameters []VariableNode
-	Body       Node
-	BodyKind   BodyKind
+	Expression ExpressionNode
 }
 
-func (*LambdaExpression) GetKind() Kind        { return LAMBDA_EXPRESSION }
-func (lx *LambdaExpression) Accept(v *Visitor) { (*v).Visit(lx) }
+func (*ExpressionLambdaExpression) GetKind() Kind { return LAMBDA_EXPRESSION }
 
-func (lx *LambdaExpression) GetParameters() []VariableNode { return lx.Parameters }
-func (lx *LambdaExpression) GetBody() Node                 { return lx.Body }
-func (lx *LambdaExpression) GetBodyKind() BodyKind         { return lx.BodyKind }
+func (xlx *ExpressionLambdaExpression) GetParameters() []VariableNode { return xlx.Parameters }
+func (xlx *ExpressionLambdaExpression) GetBody() Node                 { return xlx.Expression }
+func (xlx *ExpressionLambdaExpression) GetBodyKind() BodyKind         { return EXPRESSION_BODY_KIND }
 
-func (*LambdaExpression) caseLabelNode()        {}
-func (*LambdaExpression) expressionNode()       {}
-func (*LambdaExpression) lambdaExpressionNode() {}
+func (*ExpressionLambdaExpression) caseLabelNode()        {}
+func (*ExpressionLambdaExpression) expressionNode()       {}
+func (*ExpressionLambdaExpression) lambdaExpressionNode() {}
+
+// Implements [LambdaExpressionNode] of kind [STATEMENT_BODY_KIND].
+type StatementLambdaExpression struct {
+	Parameters []VariableNode
+	Block      BlockNode
+}
+
+func (*StatementLambdaExpression) GetKind() Kind { return LAMBDA_EXPRESSION }
+
+func (slx *StatementLambdaExpression) GetParameters() []VariableNode { return slx.Parameters }
+func (slx *StatementLambdaExpression) GetBody() Node                 { return slx.Block }
+func (slx *StatementLambdaExpression) GetBodyKind() BodyKind         { return STATEMENT_BODY_KIND }
+
+func (*StatementLambdaExpression) caseLabelNode()        {}
+func (*StatementLambdaExpression) expressionNode()       {}
+func (*StatementLambdaExpression) lambdaExpressionNode() {}
 
 // Implements [PackageNode].
 type Package struct {
@@ -556,8 +579,7 @@ type Package struct {
 	PackageName ExpressionNode
 }
 
-func (*Package) GetKind() Kind       { return PACKAGE }
-func (p *Package) Accept(v *Visitor) { (*v).Visit(p) }
+func (*Package) GetKind() Kind { return PACKAGE }
 
 func (p *Package) GetAnnotations() []AnnotationNode { return p.Annotations }
 func (p *Package) GetPackageName() ExpressionNode   { return p.PackageName }
@@ -569,8 +591,7 @@ type Parenthesized struct {
 	Expression ExpressionNode
 }
 
-func (*Parenthesized) GetKind() Kind       { return PARENTHESIZED }
-func (p *Parenthesized) Accept(v *Visitor) { (*v).Visit(p) }
+func (*Parenthesized) GetKind() Kind { return PARENTHESIZED }
 
 func (p *Parenthesized) GetExpression() ExpressionNode { return p.Expression }
 
@@ -583,8 +604,7 @@ type BindingPattern struct {
 	Variable VariableNode
 }
 
-func (*BindingPattern) GetKind() Kind        { return BINDING_PATTERN }
-func (bp *BindingPattern) Accept(v *Visitor) { (*v).Visit(bp) }
+func (*BindingPattern) GetKind() Kind { return BINDING_PATTERN }
 
 func (bp *BindingPattern) GetVariable() VariableNode { return bp.Variable }
 
@@ -598,8 +618,7 @@ type GuardedPattern struct {
 	Expression ExpressionNode
 }
 
-func (*GuardedPattern) GetKind() Kind        { return GUARDED_PATTERN }
-func (gp *GuardedPattern) Accept(v *Visitor) { (*v).Visit(gp) }
+func (*GuardedPattern) GetKind() Kind { return GUARDED_PATTERN }
 
 func (gp *GuardedPattern) GetPattern() PatternNode       { return gp.Pattern }
 func (gp *GuardedPattern) GetExpression() ExpressionNode { return gp.Expression }
@@ -613,8 +632,7 @@ type ParenthesizedPattern struct {
 	Pattern PatternNode
 }
 
-func (*ParenthesizedPattern) GetKind() Kind        { return PARENTHESIZED_PATTERN }
-func (pp *ParenthesizedPattern) Accept(v *Visitor) { (*v).Visit(pp) }
+func (*ParenthesizedPattern) GetKind() Kind { return PARENTHESIZED_PATTERN }
 
 func (pp *ParenthesizedPattern) GetPattern() PatternNode { return pp.Pattern }
 
@@ -626,8 +644,7 @@ func (*ParenthesizedPattern) parenthesizedPatternNode() {}
 type DefaultCaseLabel struct {
 }
 
-func (*DefaultCaseLabel) GetKind() Kind         { return DEFAULT_CASE_LABEL }
-func (dcl *DefaultCaseLabel) Accept(v *Visitor) { (*v).Visit(dcl) }
+func (*DefaultCaseLabel) GetKind() Kind { return DEFAULT_CASE_LABEL }
 
 func (*DefaultCaseLabel) caseLabelNode()        {}
 func (*DefaultCaseLabel) defaultCaseLabelNode() {}
@@ -637,8 +654,7 @@ type PrimitiveType struct {
 	PrimitiveTypeKind TypeKind
 }
 
-func (*PrimitiveType) GetKind() Kind        { return PRIMITIVE_TYPE }
-func (pt *PrimitiveType) Accept(v *Visitor) { (*v).Visit(pt) }
+func (*PrimitiveType) GetKind() Kind { return PRIMITIVE_TYPE }
 
 func (pt *PrimitiveType) GetPrimitiveTypeKind() TypeKind { return pt.PrimitiveTypeKind }
 
@@ -649,8 +665,7 @@ type Return struct {
 	Expression *ExpressionNode
 }
 
-func (*Return) GetKind() Kind       { return RETURN }
-func (r *Return) Accept(v *Visitor) { (*v).Visit(r) }
+func (*Return) GetKind() Kind { return RETURN }
 
 func (r *Return) GetExpression() *ExpressionNode { return r.Expression }
 
@@ -661,8 +676,7 @@ func (*Return) returnNode()    {}
 type EmptyStatement struct {
 }
 
-func (*EmptyStatement) GetKind() Kind        { return EMPTY_STATEMENT }
-func (es *EmptyStatement) Accept(v *Visitor) { (*v).Visit(es) }
+func (*EmptyStatement) GetKind() Kind { return EMPTY_STATEMENT }
 
 func (*EmptyStatement) statementNode()      {}
 func (*EmptyStatement) emptyStatementNode() {}
@@ -673,8 +687,7 @@ type Switch struct {
 	Cases      []CaseNode
 }
 
-func (*Switch) GetKind() Kind       { return SWITCH }
-func (s *Switch) Accept(v *Visitor) { (*v).Visit(s) }
+func (*Switch) GetKind() Kind { return SWITCH }
 
 func (s *Switch) GetExpression() ExpressionNode { return s.Expression }
 func (s *Switch) GetCases() []CaseNode          { return s.Cases }
@@ -688,8 +701,7 @@ type SwitchExpression struct {
 	Cases      []CaseNode
 }
 
-func (*SwitchExpression) GetKind() Kind        { return SWITCH_EXPRESSION }
-func (sx *SwitchExpression) Accept(v *Visitor) { (*v).Visit(sx) }
+func (*SwitchExpression) GetKind() Kind { return SWITCH_EXPRESSION }
 
 func (sx *SwitchExpression) GetExpression() ExpressionNode { return sx.Expression }
 func (sx *SwitchExpression) GetCases() []CaseNode          { return sx.Cases }
@@ -704,8 +716,7 @@ type Synchronized struct {
 	Block      BlockNode
 }
 
-func (*Synchronized) GetKind() Kind       { return SYNCHRONIZED }
-func (s *Synchronized) Accept(v *Visitor) { (*v).Visit(s) }
+func (*Synchronized) GetKind() Kind { return SYNCHRONIZED }
 
 func (s *Synchronized) GetExpression() ExpressionNode { return s.Expression }
 func (s *Synchronized) GetBlock() BlockNode           { return s.Block }
@@ -718,8 +729,7 @@ type Throw struct {
 	Expression ExpressionNode
 }
 
-func (*Throw) GetKind() Kind       { return THROW }
-func (t *Throw) Accept(v *Visitor) { (*v).Visit(t) }
+func (*Throw) GetKind() Kind { return THROW }
 
 func (t *Throw) GetExpression() ExpressionNode { return t.Expression }
 
@@ -734,8 +744,7 @@ type Try struct {
 	Resources    []Node
 }
 
-func (*Try) GetKind() Kind       { return TRY }
-func (t *Try) Accept(v *Visitor) { (*v).Visit(t) }
+func (*Try) GetKind() Kind { return TRY }
 
 func (t *Try) GetBlock() BlockNode         { return t.Block }
 func (t *Try) GetCatches() []CatchNode     { return t.Catches }
@@ -751,8 +760,7 @@ type ParameterizedType struct {
 	TypeArguments []Node
 }
 
-func (*ParameterizedType) GetKind() Kind        { return PARAMETERIZED_TYPE }
-func (pt *ParameterizedType) Accept(v *Visitor) { (*v).Visit(pt) }
+func (*ParameterizedType) GetKind() Kind { return PARAMETERIZED_TYPE }
 
 func (pt *ParameterizedType) GetType() Node            { return pt.Type }
 func (pt *ParameterizedType) GetTypeArguments() []Node { return pt.TypeArguments }
@@ -764,8 +772,7 @@ type UnionType struct {
 	TypeAlternatives []Node
 }
 
-func (*UnionType) GetKind() Kind        { return UNION_TYPE }
-func (ut *UnionType) Accept(v *Visitor) { (*v).Visit(ut) }
+func (*UnionType) GetKind() Kind { return UNION_TYPE }
 
 func (ut *UnionType) GetTypeAlternatives() []Node { return ut.TypeAlternatives }
 
@@ -776,8 +783,7 @@ type IntersectionType struct {
 	Bounds []Node
 }
 
-func (*IntersectionType) GetKind() Kind        { return INTERSECTION_TYPE }
-func (it *IntersectionType) Accept(v *Visitor) { (*v).Visit(it) }
+func (*IntersectionType) GetKind() Kind { return INTERSECTION_TYPE }
 
 func (it *IntersectionType) GetBounds() []Node { return it.Bounds }
 
@@ -789,8 +795,7 @@ type TypeCast struct {
 	Expression ExpressionNode
 }
 
-func (*TypeCast) GetKind() Kind        { return TYPE_CAST }
-func (tc *TypeCast) Accept(v *Visitor) { (*v).Visit(tc) }
+func (*TypeCast) GetKind() Kind { return TYPE_CAST }
 
 func (tc *TypeCast) GetType() Node                 { return tc.Type }
 func (tc *TypeCast) GetExpression() ExpressionNode { return tc.Expression }
@@ -806,8 +811,7 @@ type TypeParameter struct {
 	Annotations []AnnotationNode
 }
 
-func (*TypeParameter) GetKind() Kind        { return TYPE_PARAMETER }
-func (tp *TypeParameter) Accept(v *Visitor) { (*v).Visit(tp) }
+func (*TypeParameter) GetKind() Kind { return TYPE_PARAMETER }
 
 func (tp *TypeParameter) GetName() string                  { return tp.Name }
 func (tp *TypeParameter) GetBounds() []Node                { return tp.Bounds }
@@ -824,8 +828,7 @@ type Variable struct {
 	Initializer    *ExpressionNode
 }
 
-func (*Variable) GetKind() Kind       { return VARIABLE }
-func (v *Variable) Accept(w *Visitor) { (*w).Visit(v) }
+func (*Variable) GetKind() Kind { return VARIABLE }
 
 func (v *Variable) GetModifiers() ModifiersNode        { return v.Modifiers }
 func (v *Variable) GetName() string                    { return v.Name }
@@ -842,8 +845,7 @@ type WhileLoop struct {
 	Statement StatementNode
 }
 
-func (*WhileLoop) GetKind() Kind        { return WHILE_LOOP }
-func (wl *WhileLoop) Accept(v *Visitor) { (*v).Visit(wl) }
+func (*WhileLoop) GetKind() Kind { return WHILE_LOOP }
 
 func (wl *WhileLoop) GetCondition() ExpressionNode { return wl.Condition }
 func (wl *WhileLoop) GetStatement() StatementNode  { return wl.Statement }
@@ -856,8 +858,7 @@ type PostfixIncrement struct {
 	Expression ExpressionNode
 }
 
-func (*PostfixIncrement) GetKind() Kind        { return POSTFIX_INCREMENT }
-func (pi *PostfixIncrement) Accept(v *Visitor) { (*v).Visit(pi) }
+func (*PostfixIncrement) GetKind() Kind { return POSTFIX_INCREMENT }
 
 func (pi *PostfixIncrement) GetExpression() ExpressionNode { return pi.Expression }
 
@@ -870,8 +871,7 @@ type PostfixDecrement struct {
 	Expression ExpressionNode
 }
 
-func (*PostfixDecrement) GetKind() Kind        { return POSTFIX_DECREMENT }
-func (pd *PostfixDecrement) Accept(v *Visitor) { (*v).Visit(pd) }
+func (*PostfixDecrement) GetKind() Kind { return POSTFIX_DECREMENT }
 
 func (pd *PostfixDecrement) GetExpression() ExpressionNode { return pd.Expression }
 
@@ -884,8 +884,7 @@ type PrefixIncrement struct {
 	Expression ExpressionNode
 }
 
-func (*PrefixIncrement) GetKind() Kind        { return PREFIX_INCREMENT }
-func (pi *PrefixIncrement) Accept(v *Visitor) { (*v).Visit(pi) }
+func (*PrefixIncrement) GetKind() Kind { return PREFIX_INCREMENT }
 
 func (pi *PrefixIncrement) GetExpression() ExpressionNode { return pi.Expression }
 
@@ -898,8 +897,7 @@ type PrefixDecrement struct {
 	Expression ExpressionNode
 }
 
-func (*PrefixDecrement) GetKind() Kind        { return PREFIX_DECREMENT }
-func (pd *PrefixDecrement) Accept(v *Visitor) { (*v).Visit(pd) }
+func (*PrefixDecrement) GetKind() Kind { return PREFIX_DECREMENT }
 
 func (pd *PrefixDecrement) GetExpression() ExpressionNode { return pd.Expression }
 
@@ -912,8 +910,7 @@ type UnaryPlus struct {
 	Expression ExpressionNode
 }
 
-func (*UnaryPlus) GetKind() Kind        { return UNARY_PLUS }
-func (up *UnaryPlus) Accept(v *Visitor) { (*v).Visit(up) }
+func (*UnaryPlus) GetKind() Kind { return UNARY_PLUS }
 
 func (up *UnaryPlus) GetExpression() ExpressionNode { return up.Expression }
 
@@ -926,8 +923,7 @@ type UnaryMinus struct {
 	Expression ExpressionNode
 }
 
-func (*UnaryMinus) GetKind() Kind        { return UNARY_MINUS }
-func (um *UnaryMinus) Accept(v *Visitor) { (*v).Visit(um) }
+func (*UnaryMinus) GetKind() Kind { return UNARY_MINUS }
 
 func (um *UnaryMinus) GetExpression() ExpressionNode { return um.Expression }
 
@@ -940,8 +936,7 @@ type BitwiseComplement struct {
 	Expression ExpressionNode
 }
 
-func (*BitwiseComplement) GetKind() Kind        { return BITWISE_COMPLEMENT }
-func (bc *BitwiseComplement) Accept(v *Visitor) { (*v).Visit(bc) }
+func (*BitwiseComplement) GetKind() Kind { return BITWISE_COMPLEMENT }
 
 func (bc *BitwiseComplement) GetExpression() ExpressionNode { return bc.Expression }
 
@@ -954,8 +949,7 @@ type LogicalComplement struct {
 	Expression ExpressionNode
 }
 
-func (*LogicalComplement) GetKind() Kind        { return LOGICAL_COMPLEMENT }
-func (lc *LogicalComplement) Accept(v *Visitor) { (*v).Visit(lc) }
+func (*LogicalComplement) GetKind() Kind { return LOGICAL_COMPLEMENT }
 
 func (lc *LogicalComplement) GetExpression() ExpressionNode { return lc.Expression }
 
@@ -969,8 +963,7 @@ type Multiply struct {
 	RightOperand ExpressionNode
 }
 
-func (*Multiply) GetKind() Kind       { return MULTIPLY }
-func (m *Multiply) Accept(v *Visitor) { (*v).Visit(m) }
+func (*Multiply) GetKind() Kind { return MULTIPLY }
 
 func (m *Multiply) GetLeftOperand() ExpressionNode  { return m.LeftOperand }
 func (m *Multiply) GetRightOperand() ExpressionNode { return m.RightOperand }
@@ -985,8 +978,7 @@ type Divide struct {
 	RightOperand ExpressionNode
 }
 
-func (*Divide) GetKind() Kind       { return DIVIDE }
-func (d *Divide) Accept(v *Visitor) { (*v).Visit(d) }
+func (*Divide) GetKind() Kind { return DIVIDE }
 
 func (d *Divide) GetLeftOperand() ExpressionNode  { return d.LeftOperand }
 func (d *Divide) GetRightOperand() ExpressionNode { return d.RightOperand }
@@ -1001,8 +993,7 @@ type Remainder struct {
 	RightOperand ExpressionNode
 }
 
-func (*Remainder) GetKind() Kind       { return REMAINDER }
-func (r *Remainder) Accept(v *Visitor) { (*v).Visit(r) }
+func (*Remainder) GetKind() Kind { return REMAINDER }
 
 func (r *Remainder) GetLeftOperand() ExpressionNode  { return r.LeftOperand }
 func (r *Remainder) GetRightOperand() ExpressionNode { return r.RightOperand }
@@ -1017,8 +1008,7 @@ type Plus struct {
 	RightOperand ExpressionNode
 }
 
-func (*Plus) GetKind() Kind       { return PLUS }
-func (p *Plus) Accept(v *Visitor) { (*v).Visit(p) }
+func (*Plus) GetKind() Kind { return PLUS }
 
 func (p *Plus) GetLeftOperand() ExpressionNode  { return p.LeftOperand }
 func (p *Plus) GetRightOperand() ExpressionNode { return p.RightOperand }
@@ -1033,8 +1023,7 @@ type Minus struct {
 	RightOperand ExpressionNode
 }
 
-func (*Minus) GetKind() Kind       { return MINUS }
-func (m *Minus) Accept(v *Visitor) { (*v).Visit(m) }
+func (*Minus) GetKind() Kind { return MINUS }
 
 func (m *Minus) GetLeftOperand() ExpressionNode  { return m.LeftOperand }
 func (m *Minus) GetRightOperand() ExpressionNode { return m.RightOperand }
@@ -1049,8 +1038,7 @@ type LeftShift struct {
 	RightOperand ExpressionNode
 }
 
-func (*LeftShift) GetKind() Kind        { return LEFT_SHIFT }
-func (ls *LeftShift) Accept(v *Visitor) { (*v).Visit(ls) }
+func (*LeftShift) GetKind() Kind { return LEFT_SHIFT }
 
 func (ls *LeftShift) GetLeftOperand() ExpressionNode  { return ls.LeftOperand }
 func (ls *LeftShift) GetRightOperand() ExpressionNode { return ls.RightOperand }
@@ -1065,8 +1053,7 @@ type RightShift struct {
 	RightOperand ExpressionNode
 }
 
-func (*RightShift) GetKind() Kind        { return RIGHT_SHIFT }
-func (rs *RightShift) Accept(v *Visitor) { (*v).Visit(rs) }
+func (*RightShift) GetKind() Kind { return RIGHT_SHIFT }
 
 func (rs *RightShift) GetLeftOperand() ExpressionNode  { return rs.LeftOperand }
 func (rs *RightShift) GetRightOperand() ExpressionNode { return rs.RightOperand }
@@ -1081,8 +1068,7 @@ type UnsignedRightShift struct {
 	RightOperand ExpressionNode
 }
 
-func (*UnsignedRightShift) GetKind() Kind         { return UNSIGNED_RIGHT_SHIFT }
-func (urs *UnsignedRightShift) Accept(v *Visitor) { (*v).Visit(urs) }
+func (*UnsignedRightShift) GetKind() Kind { return UNSIGNED_RIGHT_SHIFT }
 
 func (urs *UnsignedRightShift) GetLeftOperand() ExpressionNode  { return urs.LeftOperand }
 func (urs *UnsignedRightShift) GetRightOperand() ExpressionNode { return urs.RightOperand }
@@ -1097,8 +1083,7 @@ type LessThan struct {
 	RightOperand ExpressionNode
 }
 
-func (*LessThan) GetKind() Kind        { return LESS_THAN }
-func (lt *LessThan) Accept(v *Visitor) { (*v).Visit(lt) }
+func (*LessThan) GetKind() Kind { return LESS_THAN }
 
 func (lt *LessThan) GetLeftOperand() ExpressionNode  { return lt.LeftOperand }
 func (lt *LessThan) GetRightOperand() ExpressionNode { return lt.RightOperand }
@@ -1113,8 +1098,7 @@ type GreaterThan struct {
 	RightOperand ExpressionNode
 }
 
-func (*GreaterThan) GetKind() Kind        { return GREATER_THAN }
-func (gt *GreaterThan) Accept(v *Visitor) { (*v).Visit(gt) }
+func (*GreaterThan) GetKind() Kind { return GREATER_THAN }
 
 func (gt *GreaterThan) GetLeftOperand() ExpressionNode  { return gt.LeftOperand }
 func (gt *GreaterThan) GetRightOperand() ExpressionNode { return gt.RightOperand }
@@ -1129,8 +1113,7 @@ type LessThanEqual struct {
 	RightOperand ExpressionNode
 }
 
-func (*LessThanEqual) GetKind() Kind         { return LESS_THAN_EQUAL }
-func (lte *LessThanEqual) Accept(v *Visitor) { (*v).Visit(lte) }
+func (*LessThanEqual) GetKind() Kind { return LESS_THAN_EQUAL }
 
 func (lte *LessThanEqual) GetLeftOperand() ExpressionNode  { return lte.LeftOperand }
 func (lte *LessThanEqual) GetRightOperand() ExpressionNode { return lte.RightOperand }
@@ -1145,8 +1128,7 @@ type GreaterThanEqual struct {
 	RightOperand ExpressionNode
 }
 
-func (*GreaterThanEqual) GetKind() Kind         { return GREATER_THAN_EQUAL }
-func (gte *GreaterThanEqual) Accept(v *Visitor) { (*v).Visit(gte) }
+func (*GreaterThanEqual) GetKind() Kind { return GREATER_THAN_EQUAL }
 
 func (gte *GreaterThanEqual) GetLeftOperand() ExpressionNode  { return gte.LeftOperand }
 func (gte *GreaterThanEqual) GetRightOperand() ExpressionNode { return gte.RightOperand }
@@ -1161,8 +1143,7 @@ type EqualTo struct {
 	RightOperand ExpressionNode
 }
 
-func (*EqualTo) GetKind() Kind        { return EQUAL_TO }
-func (eq *EqualTo) Accept(v *Visitor) { (*v).Visit(eq) }
+func (*EqualTo) GetKind() Kind { return EQUAL_TO }
 
 func (eq *EqualTo) GetLeftOperand() ExpressionNode  { return eq.LeftOperand }
 func (eq *EqualTo) GetRightOperand() ExpressionNode { return eq.RightOperand }
@@ -1177,8 +1158,7 @@ type NotEqualTo struct {
 	RightOperand ExpressionNode
 }
 
-func (*NotEqualTo) GetKind() Kind         { return NOT_EQUAL_TO }
-func (neq *NotEqualTo) Accept(v *Visitor) { (*v).Visit(neq) }
+func (*NotEqualTo) GetKind() Kind { return NOT_EQUAL_TO }
 
 func (neq *NotEqualTo) GetLeftOperand() ExpressionNode  { return neq.LeftOperand }
 func (neq *NotEqualTo) GetRightOperand() ExpressionNode { return neq.RightOperand }
@@ -1193,8 +1173,7 @@ type And struct {
 	RightOperand ExpressionNode
 }
 
-func (*And) GetKind() Kind       { return AND }
-func (a *And) Accept(v *Visitor) { (*v).Visit(a) }
+func (*And) GetKind() Kind { return AND }
 
 func (a *And) GetLeftOperand() ExpressionNode  { return a.LeftOperand }
 func (a *And) GetRightOperand() ExpressionNode { return a.RightOperand }
@@ -1209,8 +1188,7 @@ type Xor struct {
 	RightOperand ExpressionNode
 }
 
-func (*Xor) GetKind() Kind       { return XOR }
-func (x *Xor) Accept(v *Visitor) { (*v).Visit(x) }
+func (*Xor) GetKind() Kind { return XOR }
 
 func (x *Xor) GetLeftOperand() ExpressionNode  { return x.LeftOperand }
 func (x *Xor) GetRightOperand() ExpressionNode { return x.RightOperand }
@@ -1225,8 +1203,7 @@ type Or struct {
 	RightOperand ExpressionNode
 }
 
-func (*Or) GetKind() Kind        { return OR }
-func (or *Or) Accept(v *Visitor) { (*v).Visit(or) }
+func (*Or) GetKind() Kind { return OR }
 
 func (or *Or) GetLeftOperand() ExpressionNode  { return or.LeftOperand }
 func (or *Or) GetRightOperand() ExpressionNode { return or.RightOperand }
@@ -1241,8 +1218,7 @@ type ConditionalAnd struct {
 	RightOperand ExpressionNode
 }
 
-func (*ConditionalAnd) GetKind() Kind        { return CONDITIONAL_AND }
-func (ca *ConditionalAnd) Accept(v *Visitor) { (*v).Visit(ca) }
+func (*ConditionalAnd) GetKind() Kind { return CONDITIONAL_AND }
 
 func (ca *ConditionalAnd) GetLeftOperand() ExpressionNode  { return ca.LeftOperand }
 func (ca *ConditionalAnd) GetRightOperand() ExpressionNode { return ca.RightOperand }
@@ -1257,8 +1233,7 @@ type ConditionalOr struct {
 	RightOperand ExpressionNode
 }
 
-func (*ConditionalOr) GetKind() Kind        { return CONDITIONAL_OR }
-func (or *ConditionalOr) Accept(v *Visitor) { (*v).Visit(or) }
+func (*ConditionalOr) GetKind() Kind { return CONDITIONAL_OR }
 
 func (or *ConditionalOr) GetLeftOperand() ExpressionNode  { return or.LeftOperand }
 func (or *ConditionalOr) GetRightOperand() ExpressionNode { return or.RightOperand }
@@ -1273,8 +1248,7 @@ type MultiplyAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*MultiplyAssignment) GetKind() Kind        { return MULTIPLY_ASSIGNMENT }
-func (ma *MultiplyAssignment) Accept(v *Visitor) { (*v).Visit(ma) }
+func (*MultiplyAssignment) GetKind() Kind { return MULTIPLY_ASSIGNMENT }
 
 func (ma *MultiplyAssignment) GetVariable() ExpressionNode   { return ma.Variable }
 func (ma *MultiplyAssignment) GetExpression() ExpressionNode { return ma.Expression }
@@ -1289,8 +1263,7 @@ type DivideAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*DivideAssignment) GetKind() Kind        { return DIVIDE_ASSIGNMENT }
-func (da *DivideAssignment) Accept(v *Visitor) { (*v).Visit(da) }
+func (*DivideAssignment) GetKind() Kind { return DIVIDE_ASSIGNMENT }
 
 func (da *DivideAssignment) GetVariable() ExpressionNode   { return da.Variable }
 func (da *DivideAssignment) GetExpression() ExpressionNode { return da.Expression }
@@ -1305,8 +1278,7 @@ type RemainderAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*RemainderAssignment) GetKind() Kind        { return REMAINDER_ASSIGNMENT }
-func (ra *RemainderAssignment) Accept(v *Visitor) { (*v).Visit(ra) }
+func (*RemainderAssignment) GetKind() Kind { return REMAINDER_ASSIGNMENT }
 
 func (ra *RemainderAssignment) GetVariable() ExpressionNode   { return ra.Variable }
 func (ra *RemainderAssignment) GetExpression() ExpressionNode { return ra.Expression }
@@ -1321,8 +1293,7 @@ type PlusAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*PlusAssignment) GetKind() Kind        { return PLUS_ASSIGNMENT }
-func (pa *PlusAssignment) Accept(v *Visitor) { (*v).Visit(pa) }
+func (*PlusAssignment) GetKind() Kind { return PLUS_ASSIGNMENT }
 
 func (pa *PlusAssignment) GetVariable() ExpressionNode   { return pa.Variable }
 func (pa *PlusAssignment) GetExpression() ExpressionNode { return pa.Expression }
@@ -1337,8 +1308,7 @@ type MinusAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*MinusAssignment) GetKind() Kind        { return MINUS_ASSIGNMENT }
-func (ma *MinusAssignment) Accept(v *Visitor) { (*v).Visit(ma) }
+func (*MinusAssignment) GetKind() Kind { return MINUS_ASSIGNMENT }
 
 func (ma *MinusAssignment) GetVariable() ExpressionNode   { return ma.Variable }
 func (ma *MinusAssignment) GetExpression() ExpressionNode { return ma.Expression }
@@ -1353,8 +1323,7 @@ type LeftShiftAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*LeftShiftAssignment) GetKind() Kind         { return LEFT_SHIFT_ASSIGNMENT }
-func (lsa *LeftShiftAssignment) Accept(v *Visitor) { (*v).Visit(lsa) }
+func (*LeftShiftAssignment) GetKind() Kind { return LEFT_SHIFT_ASSIGNMENT }
 
 func (lsa *LeftShiftAssignment) GetVariable() ExpressionNode   { return lsa.Variable }
 func (lsa *LeftShiftAssignment) GetExpression() ExpressionNode { return lsa.Expression }
@@ -1369,8 +1338,7 @@ type RightShiftAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*RightShiftAssignment) GetKind() Kind         { return RIGHT_SHIFT_ASSIGNMENT }
-func (rsa *RightShiftAssignment) Accept(v *Visitor) { (*v).Visit(rsa) }
+func (*RightShiftAssignment) GetKind() Kind { return RIGHT_SHIFT_ASSIGNMENT }
 
 func (rsa *RightShiftAssignment) GetVariable() ExpressionNode   { return rsa.Variable }
 func (rsa *RightShiftAssignment) GetExpression() ExpressionNode { return rsa.Expression }
@@ -1385,8 +1353,7 @@ type UnsignedRightShiftAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*UnsignedRightShiftAssignment) GetKind() Kind          { return UNSIGNED_RIGHT_SHIFT_ASSIGNMENT }
-func (ursa *UnsignedRightShiftAssignment) Accept(v *Visitor) { (*v).Visit(ursa) }
+func (*UnsignedRightShiftAssignment) GetKind() Kind { return UNSIGNED_RIGHT_SHIFT_ASSIGNMENT }
 
 func (ursa *UnsignedRightShiftAssignment) GetVariable() ExpressionNode   { return ursa.Variable }
 func (ursa *UnsignedRightShiftAssignment) GetExpression() ExpressionNode { return ursa.Expression }
@@ -1401,8 +1368,7 @@ type AndAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*AndAssignment) GetKind() Kind        { return AND_ASSIGNMENT }
-func (aa *AndAssignment) Accept(v *Visitor) { (*v).Visit(aa) }
+func (*AndAssignment) GetKind() Kind { return AND_ASSIGNMENT }
 
 func (aa *AndAssignment) GetVariable() ExpressionNode   { return aa.Variable }
 func (aa *AndAssignment) GetExpression() ExpressionNode { return aa.Expression }
@@ -1417,8 +1383,7 @@ type XorAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*XorAssignment) GetKind() Kind        { return XOR_ASSIGNMENT }
-func (xa *XorAssignment) Accept(v *Visitor) { (*v).Visit(xa) }
+func (*XorAssignment) GetKind() Kind { return XOR_ASSIGNMENT }
 
 func (xa *XorAssignment) GetVariable() ExpressionNode   { return xa.Variable }
 func (xa *XorAssignment) GetExpression() ExpressionNode { return xa.Expression }
@@ -1433,8 +1398,7 @@ type OrAssignment struct {
 	Expression ExpressionNode
 }
 
-func (*OrAssignment) GetKind() Kind        { return OR_ASSIGNMENT }
-func (oa *OrAssignment) Accept(v *Visitor) { (*v).Visit(oa) }
+func (*OrAssignment) GetKind() Kind { return OR_ASSIGNMENT }
 
 func (oa *OrAssignment) GetVariable() ExpressionNode   { return oa.Variable }
 func (oa *OrAssignment) GetExpression() ExpressionNode { return oa.Expression }
@@ -1448,8 +1412,7 @@ type IntLiteral struct {
 	Value string
 }
 
-func (*IntLiteral) GetKind() Kind        { return INT_LITERAL }
-func (il *IntLiteral) Accept(v *Visitor) { (*v).Visit(il) }
+func (*IntLiteral) GetKind() Kind { return INT_LITERAL }
 
 func (il *IntLiteral) GetValue() string { return il.Value }
 
@@ -1462,8 +1425,7 @@ type LongLiteral struct {
 	Value string
 }
 
-func (*LongLiteral) GetKind() Kind        { return LONG_LITERAL }
-func (ll *LongLiteral) Accept(v *Visitor) { (*v).Visit(ll) }
+func (*LongLiteral) GetKind() Kind { return LONG_LITERAL }
 
 func (ll *LongLiteral) GetValue() string { return ll.Value }
 
@@ -1476,8 +1438,7 @@ type FloatLiteral struct {
 	Value string
 }
 
-func (*FloatLiteral) GetKind() Kind        { return FLOAT_LITERAL }
-func (fl *FloatLiteral) Accept(v *Visitor) { (*v).Visit(fl) }
+func (*FloatLiteral) GetKind() Kind { return FLOAT_LITERAL }
 
 func (fl *FloatLiteral) GetValue() string { return fl.Value }
 
@@ -1490,8 +1451,7 @@ type DoubleLiteral struct {
 	Value string
 }
 
-func (*DoubleLiteral) GetKind() Kind        { return DOUBLE_LITERAL }
-func (dl *DoubleLiteral) Accept(v *Visitor) { (*v).Visit(dl) }
+func (*DoubleLiteral) GetKind() Kind { return DOUBLE_LITERAL }
 
 func (dl *DoubleLiteral) GetValue() string { return dl.Value }
 
@@ -1504,8 +1464,7 @@ type BooleanLiteral struct {
 	Value bool
 }
 
-func (*BooleanLiteral) GetKind() Kind        { return BOOLEAN_LITERAL }
-func (bl *BooleanLiteral) Accept(v *Visitor) { (*v).Visit(bl) }
+func (*BooleanLiteral) GetKind() Kind { return BOOLEAN_LITERAL }
 
 func (bl *BooleanLiteral) GetValue() string {
 	if bl.Value {
@@ -1523,10 +1482,9 @@ type CharLiteral struct {
 	Value string
 }
 
-func (*CharLiteral) GetKind() Kind        { return CHAR_LITERAL }
-func (cl *CharLiteral) Accept(v *Visitor) { (*v).Visit(cl) }
+func (*CharLiteral) GetKind() Kind { return CHAR_LITERAL }
 
-func (cl *CharLiteral) GetValue() string { return fmt.Sprintf("'%s'", cl.Value) }
+func (cl *CharLiteral) GetValue() string { return cl.Value }
 
 func (*CharLiteral) caseLabelNode()  {}
 func (*CharLiteral) expressionNode() {}
@@ -1537,10 +1495,9 @@ type StringLiteral struct {
 	Value string
 }
 
-func (*StringLiteral) GetKind() Kind        { return STRING_LITERAL }
-func (sl *StringLiteral) Accept(v *Visitor) { (*v).Visit(sl) }
+func (*StringLiteral) GetKind() Kind { return STRING_LITERAL }
 
-func (sl *StringLiteral) GetValue() string { return fmt.Sprintf("\"%s\"", sl.Value) }
+func (sl *StringLiteral) GetValue() string { return sl.Value }
 
 func (*StringLiteral) caseLabelNode()  {}
 func (*StringLiteral) expressionNode() {}
@@ -1548,11 +1505,9 @@ func (*StringLiteral) literalNode()    {}
 
 // Implements [LiteralNode] of kind [NULL_LITERAL].
 type NullLiteral struct {
-	Value string
 }
 
-func (*NullLiteral) GetKind() Kind        { return NULL_LITERAL }
-func (nl *NullLiteral) Accept(v *Visitor) { (*v).Visit(nl) }
+func (*NullLiteral) GetKind() Kind { return NULL_LITERAL }
 
 func (*NullLiteral) GetValue() string { return "null" }
 
@@ -1562,37 +1517,33 @@ func (*NullLiteral) literalNode()    {}
 
 // Implements [WildcardNode] of kind [UNBOUNDED_WILDCARD].
 type UnboundedWildcard struct {
-	Bound *Node
 }
 
-func (*UnboundedWildcard) GetKind() Kind        { return UNBOUNDED_WILDCARD }
-func (uw *UnboundedWildcard) Accept(v *Visitor) { (*v).Visit(uw) }
+func (*UnboundedWildcard) GetKind() Kind { return UNBOUNDED_WILDCARD }
 
-func (uw *UnboundedWildcard) GetBound() *Node { return uw.Bound }
+func (uw *UnboundedWildcard) GetBound() *Node { return nil }
 
 func (*UnboundedWildcard) wildcardNode() {}
 
 // Implements [WildcardNode] of kind [EXTENDS_WILDCARD].
 type ExtendsWildcard struct {
-	Bound *Node
+	Bound Node
 }
 
-func (*ExtendsWildcard) GetKind() Kind        { return EXTENDS_WILDCARD }
-func (xw *ExtendsWildcard) Accept(v *Visitor) { (*v).Visit(xw) }
+func (*ExtendsWildcard) GetKind() Kind { return EXTENDS_WILDCARD }
 
-func (xw *ExtendsWildcard) GetBound() *Node { return xw.Bound }
+func (xw *ExtendsWildcard) GetBound() *Node { return &xw.Bound }
 
 func (*ExtendsWildcard) wildcardNode() {}
 
 // Implements [WildcardNode] of kind [SUPER_WILDCARD].
 type SuperWildcard struct {
-	Bound *Node
+	Bound Node
 }
 
-func (*SuperWildcard) GetKind() Kind        { return SUPER_WILDCARD }
-func (sw *SuperWildcard) Accept(v *Visitor) { (*v).Visit(sw) }
+func (*SuperWildcard) GetKind() Kind { return SUPER_WILDCARD }
 
-func (sw *SuperWildcard) GetBound() *Node { return sw.Bound }
+func (sw *SuperWildcard) GetBound() *Node { return &sw.Bound }
 
 func (*SuperWildcard) wildcardNode() {}
 
@@ -1601,8 +1552,7 @@ type Erroneous struct {
 	ErrorNodes []Node
 }
 
-func (*Erroneous) GetKind() Kind       { return ERRONEOUS }
-func (e *Erroneous) Accept(v *Visitor) { (*v).Visit(e) }
+func (*Erroneous) GetKind() Kind { return ERRONEOUS }
 
 func (e *Erroneous) GetErrorNodes() []Node { return e.ErrorNodes }
 
@@ -1612,23 +1562,21 @@ func (*Erroneous) erroneousNode()  {}
 
 // Implements [ClassNode] of kind [INTERFACE].
 type Interface struct {
-	Modifiers        ModifiersNode
-	SimpleName       string
-	TypeParameters   []TypeParameterNode
-	ExtendsClause    *Node
-	ImplementsClause []Node
-	PermitsClause    []Node
-	Members          []Node
+	Modifiers      ModifiersNode
+	SimpleName     string
+	TypeParameters []TypeParameterNode
+	ExtendsClause  *Node
+	PermitsClause  []Node
+	Members        []Node
 }
 
-func (*Interface) GetKind() Kind       { return INTERFACE }
-func (i *Interface) Accept(v *Visitor) { (*v).Visit(i) }
+func (*Interface) GetKind() Kind { return INTERFACE }
 
 func (i *Interface) GetModifiers() ModifiersNode            { return i.Modifiers }
 func (i *Interface) GetSimpleName() string                  { return i.SimpleName }
 func (i *Interface) GetTypeParameters() []TypeParameterNode { return i.TypeParameters }
 func (i *Interface) GetExtendsClause() *Node                { return i.ExtendsClause }
-func (i *Interface) GetImplementsClause() []Node            { return i.ImplementsClause }
+func (i *Interface) GetImplementsClause() []Node            { return nil }
 func (i *Interface) GetPermitsClause() []Node               { return i.PermitsClause }
 func (i *Interface) GetMembers() []Node                     { return i.Members }
 
@@ -1637,24 +1585,19 @@ func (*Interface) classNode()     {}
 
 // Implements [ClassNode] of kind [ENUM].
 type Enum struct {
-	Modifiers        ModifiersNode
-	SimpleName       string
-	TypeParameters   []TypeParameterNode
-	ExtendsClause    *Node
-	ImplementsClause []Node
-	PermitsClause    []Node
-	Members          []Node
+	Modifiers  ModifiersNode
+	SimpleName string
+	Members    []Node
 }
 
-func (*Enum) GetKind() Kind       { return ENUM }
-func (e *Enum) Accept(v *Visitor) { (*v).Visit(e) }
+func (*Enum) GetKind() Kind { return ENUM }
 
 func (e *Enum) GetModifiers() ModifiersNode            { return e.Modifiers }
 func (e *Enum) GetSimpleName() string                  { return e.SimpleName }
-func (e *Enum) GetTypeParameters() []TypeParameterNode { return e.TypeParameters }
-func (e *Enum) GetExtendsClause() *Node                { return e.ExtendsClause }
-func (e *Enum) GetImplementsClause() []Node            { return e.ImplementsClause }
-func (e *Enum) GetPermitsClause() []Node               { return e.PermitsClause }
+func (e *Enum) GetTypeParameters() []TypeParameterNode { return nil }
+func (e *Enum) GetExtendsClause() *Node                { return nil }
+func (e *Enum) GetImplementsClause() []Node            { return nil }
+func (e *Enum) GetPermitsClause() []Node               { return nil }
 func (e *Enum) GetMembers() []Node                     { return e.Members }
 
 func (*Enum) statementNode() {}
@@ -1662,24 +1605,19 @@ func (*Enum) classNode()     {}
 
 // Implements [ClassNode] of kind [ANNOTATION_TYPE].
 type AnnotationType struct {
-	Modifiers        ModifiersNode
-	SimpleName       string
-	TypeParameters   []TypeParameterNode
-	ExtendsClause    *Node
-	ImplementsClause []Node
-	PermitsClause    []Node
-	Members          []Node
+	Modifiers  ModifiersNode
+	SimpleName string
+	Members    []Node
 }
 
-func (*AnnotationType) GetKind() Kind        { return ANNOTATION_TYPE }
-func (at *AnnotationType) Accept(v *Visitor) { (*v).Visit(at) }
+func (*AnnotationType) GetKind() Kind { return ANNOTATION_TYPE }
 
 func (at *AnnotationType) GetModifiers() ModifiersNode            { return at.Modifiers }
 func (at *AnnotationType) GetSimpleName() string                  { return at.SimpleName }
-func (at *AnnotationType) GetTypeParameters() []TypeParameterNode { return at.TypeParameters }
-func (at *AnnotationType) GetExtendsClause() *Node                { return at.ExtendsClause }
-func (at *AnnotationType) GetImplementsClause() []Node            { return at.ImplementsClause }
-func (at *AnnotationType) GetPermitsClause() []Node               { return at.PermitsClause }
+func (at *AnnotationType) GetTypeParameters() []TypeParameterNode { return nil }
+func (at *AnnotationType) GetExtendsClause() *Node                { return nil }
+func (at *AnnotationType) GetImplementsClause() []Node            { return nil }
+func (at *AnnotationType) GetPermitsClause() []Node               { return nil }
 func (at *AnnotationType) GetMembers() []Node                     { return at.Members }
 
 func (*AnnotationType) statementNode() {}
@@ -1693,8 +1631,7 @@ type Module struct {
 	Directives  []DirectiveNode
 }
 
-func (*Module) GetKind() Kind       { return MODULE }
-func (m *Module) Accept(v *Visitor) { (*v).Visit(m) }
+func (*Module) GetKind() Kind { return MODULE }
 
 func (m *Module) GetAnnotations() []AnnotationNode { return m.Annotations }
 func (m *Module) GetModuleType() ModuleKind        { return m.ModuleType }
@@ -1709,8 +1646,7 @@ type Exports struct {
 	ModuleNames []ExpressionNode
 }
 
-func (*Exports) GetKind() Kind       { return EXPORTS }
-func (x *Exports) Accept(v *Visitor) { (*v).Visit(x) }
+func (*Exports) GetKind() Kind { return EXPORTS }
 
 func (x *Exports) GetPackageName() ExpressionNode   { return x.PackageName }
 func (x *Exports) GetModuleNames() []ExpressionNode { return x.ModuleNames }
@@ -1724,8 +1660,7 @@ type Opens struct {
 	ModuleNames []ExpressionNode
 }
 
-func (*Opens) GetKind() Kind       { return OPENS }
-func (o *Opens) Accept(v *Visitor) { (*v).Visit(o) }
+func (*Opens) GetKind() Kind { return OPENS }
 
 func (o *Opens) GetPackageName() ExpressionNode   { return o.PackageName }
 func (o *Opens) GetModuleNames() []ExpressionNode { return o.ModuleNames }
@@ -1739,8 +1674,7 @@ type Provides struct {
 	ImplementationNames []ExpressionNode
 }
 
-func (*Provides) GetKind() Kind       { return PROVIDES }
-func (p *Provides) Accept(v *Visitor) { (*v).Visit(p) }
+func (*Provides) GetKind() Kind { return PROVIDES }
 
 func (p *Provides) GetServiceName() ExpressionNode           { return p.ServiceName }
 func (p *Provides) GetImplementationNames() []ExpressionNode { return p.ImplementationNames }
@@ -1753,21 +1687,18 @@ type Record struct {
 	Modifiers        ModifiersNode
 	SimpleName       string
 	TypeParameters   []TypeParameterNode
-	ExtendsClause    *Node
 	ImplementsClause []Node
-	PermitsClause    []Node
 	Members          []Node
 }
 
-func (*Record) GetKind() Kind       { return RECORD }
-func (r *Record) Accept(v *Visitor) { (*v).Visit(r) }
+func (*Record) GetKind() Kind { return RECORD }
 
 func (r *Record) GetModifiers() ModifiersNode            { return r.Modifiers }
 func (r *Record) GetSimpleName() string                  { return r.SimpleName }
 func (r *Record) GetTypeParameters() []TypeParameterNode { return r.TypeParameters }
-func (r *Record) GetExtendsClause() *Node                { return r.ExtendsClause }
+func (r *Record) GetExtendsClause() *Node                { return nil }
 func (r *Record) GetImplementsClause() []Node            { return r.ImplementsClause }
-func (r *Record) GetPermitsClause() []Node               { return r.PermitsClause }
+func (r *Record) GetPermitsClause() []Node               { return nil }
 func (r *Record) GetMembers() []Node                     { return r.Members }
 
 func (*Record) statementNode() {}
@@ -1780,8 +1711,7 @@ type Requires struct {
 	ModuleName ExpressionNode
 }
 
-func (*Requires) GetKind() Kind       { return REQUIRES }
-func (r *Requires) Accept(v *Visitor) { (*v).Visit(r) }
+func (*Requires) GetKind() Kind { return REQUIRES }
 
 func (r *Requires) IsStatic() bool                { return r.Static }
 func (r *Requires) IsTransitive() bool            { return r.Transitive }
@@ -1795,8 +1725,7 @@ type Uses struct {
 	ServiceName ExpressionNode
 }
 
-func (*Uses) GetKind() Kind       { return USES }
-func (u *Uses) Accept(v *Visitor) { (*v).Visit(u) }
+func (*Uses) GetKind() Kind { return USES }
 
 func (u *Uses) GetServiceName() ExpressionNode { return u.ServiceName }
 
@@ -1808,8 +1737,7 @@ type Yield struct {
 	Value ExpressionNode
 }
 
-func (*Yield) GetKind() Kind       { return YIELD }
-func (y *Yield) Accept(v *Visitor) { (*v).Visit(y) }
+func (*Yield) GetKind() Kind { return YIELD }
 
 func (y *Yield) GetValue() ExpressionNode { return y.Value }
 

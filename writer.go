@@ -23,7 +23,7 @@ var modifiers = [...]string{
 }
 
 // Implements [io.WriterTo] interface for [AnnotatedType].
-func (at *AnnotatedType) WriteTo(w io.Writer) (n int64, err error) {
+func (at AnnotatedType) WriteTo(w io.Writer) (n int64, err error) {
 	for _, annotation := range at.Annotations {
 		if an, aerr := annotation.WriteTo(w); aerr != nil {
 			err = aerr
@@ -42,7 +42,7 @@ func (at *AnnotatedType) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Annotation].
-func (a *Annotation) WriteTo(w io.Writer) (n int64, err error) {
+func (a Annotation) WriteTo(w io.Writer) (n int64, err error) {
 	if an, aerr := w.Write([]byte(`@`)); aerr != nil {
 		err = aerr
 		return
@@ -84,7 +84,7 @@ func (a *Annotation) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [TypeAnnotation].
-func (ta *TypeAnnotation) WriteTo(w io.Writer) (n int64, err error) {
+func (ta TypeAnnotation) WriteTo(w io.Writer) (n int64, err error) {
 	if an, aerr := w.Write([]byte(`@`)); aerr != nil {
 		err = aerr
 		return
@@ -126,7 +126,7 @@ func (ta *TypeAnnotation) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ArrayAccess].
-func (aa *ArrayAccess) WriteTo(w io.Writer) (n int64, err error) {
+func (aa ArrayAccess) WriteTo(w io.Writer) (n int64, err error) {
 	if xn, xerr := aa.Expression.WriteTo(w); xerr != nil {
 		err = xerr
 		return
@@ -155,7 +155,7 @@ func (aa *ArrayAccess) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ArrayType].
-func (at *ArrayType) WriteTo(w io.Writer) (n int64, err error) {
+func (at ArrayType) WriteTo(w io.Writer) (n int64, err error) {
 	if tn, terr := at.Type.WriteTo(w); terr != nil {
 		err = terr
 		return
@@ -172,7 +172,7 @@ func (at *ArrayType) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Assert].
-func (a *Assert) WriteTo(w io.Writer) (n int64, err error) {
+func (a Assert) WriteTo(w io.Writer) (n int64, err error) {
 	if an, aerr := w.Write([]byte(`assert`)); aerr != nil {
 		err = aerr
 		return
@@ -192,7 +192,7 @@ func (a *Assert) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(cn)
 		}
-		if dn, derr := (*a.Detail).WriteTo(w); derr != nil {
+		if dn, derr := a.Detail.WriteTo(w); derr != nil {
 			err = derr
 			return
 		} else {
@@ -209,14 +209,14 @@ func (a *Assert) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Assignment].
-func (a *Assignment) WriteTo(w io.Writer) (n int64, err error) {
+func (a Assignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := a.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
 	} else {
 		n += vn
 	}
-	if en, eerr := w.Write([]byte(`;`)); eerr != nil {
+	if en, eerr := w.Write([]byte(`=`)); eerr != nil {
 		err = eerr
 		return
 	} else {
@@ -232,7 +232,7 @@ func (a *Assignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Block].
-func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
+func (b Block) WriteTo(w io.Writer) (n int64, err error) {
 	if b.Static {
 		if sn, serr := w.Write([]byte(`static`)); serr != nil {
 			err = serr
@@ -265,7 +265,7 @@ func (b *Block) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Break].
-func (b *Break) WriteTo(w io.Writer) (n int64, err error) {
+func (b Break) WriteTo(w io.Writer) (n int64, err error) {
 	if bn, berr := w.Write([]byte(`break`)); berr != nil {
 		err = berr
 		return
@@ -290,7 +290,7 @@ func (b *Break) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [StatementCase].
-func (sc *StatementCase) WriteTo(w io.Writer) (n int64, err error) {
+func (sc StatementCase) WriteTo(w io.Writer) (n int64, err error) {
 	if sc.Expression != nil {
 		if cn, cerr := w.Write([]byte(`case`)); cerr != nil {
 			err = cerr
@@ -298,7 +298,7 @@ func (sc *StatementCase) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(cn)
 		}
-		if en, eerr := (*sc.Expression).WriteTo(w); eerr != nil {
+		if en, eerr := sc.Expression.WriteTo(w); eerr != nil {
 			err = eerr
 			return
 		} else {
@@ -330,7 +330,7 @@ func (sc *StatementCase) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [RuleCase].
-func (rc *RuleCase) WriteTo(w io.Writer) (n int64, err error) {
+func (rc RuleCase) WriteTo(w io.Writer) (n int64, err error) {
 	llen := len(rc.Labels)
 	if llen == 0 || llen == 1 && rc.Labels[0].GetKind() == DEFAULT_CASE_LABEL {
 		if dn, derr := w.Write([]byte(`default`)); derr != nil {
@@ -383,7 +383,7 @@ func (rc *RuleCase) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Catch].
-func (c *Catch) WriteTo(w io.Writer) (n int64, err error) {
+func (c Catch) WriteTo(w io.Writer) (n int64, err error) {
 	if cn, cerr := w.Write([]byte(`catch`)); cerr != nil {
 		err = cerr
 		return
@@ -396,11 +396,17 @@ func (c *Catch) WriteTo(w io.Writer) (n int64, err error) {
 	} else {
 		n += int64(on)
 	}
-	if pn, perr := c.Parameter.WriteTo(w); perr != nil {
-		err = perr
+	if tn, terr := c.Parameter.GetType().WriteTo(w); terr != nil {
+		err = terr
 		return
 	} else {
-		n += pn
+		n += tn
+	}
+	if nn, nerr := w.Write([]byte(c.Parameter.GetName())); nerr != nil {
+		err = nerr
+		return
+	} else {
+		n += int64(nn)
 	}
 	if cn, cerr := w.Write([]byte(`)`)); cerr != nil {
 		err = cerr
@@ -418,7 +424,7 @@ func (c *Catch) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Class].
-func (c *Class) WriteTo(w io.Writer) (n int64, err error) {
+func (c Class) WriteTo(w io.Writer) (n int64, err error) {
 	if mn, merr := c.Modifiers.WriteTo(w); merr != nil {
 		err = merr
 		return
@@ -478,7 +484,7 @@ func (c *Class) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(en)
 		}
-		if ecn, ecerr := (*c.ExtendsClause).WriteTo(w); ecerr != nil {
+		if ecn, ecerr := c.ExtendsClause.WriteTo(w); ecerr != nil {
 			err = ecerr
 			return
 		} else {
@@ -537,9 +543,9 @@ func (c *Class) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [CompilationUnit].
-func (cu *CompilationUnit) WriteTo(w io.Writer) (n int64, err error) {
+func (cu CompilationUnit) WriteTo(w io.Writer) (n int64, err error) {
 	if cu.Module != nil {
-		if mn, merr := (*cu.Module).WriteTo(w); merr != nil {
+		if mn, merr := cu.Module.WriteTo(w); merr != nil {
 			err = merr
 			return
 		} else {
@@ -547,38 +553,11 @@ func (cu *CompilationUnit) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	}
 	if cu.Package != nil {
-		if pn, perr := (*cu.Package).WriteTo(w); perr != nil {
+		if pn, perr := cu.Package.WriteTo(w); perr != nil {
 			err = perr
 			return
 		} else {
 			n += pn
-		}
-	} else if cu.PackageName != nil {
-		for _, annotation := range cu.PackageAnnotations {
-			if an, aerr := annotation.WriteTo(w); aerr != nil {
-				err = aerr
-				return
-			} else {
-				n += an
-			}
-		}
-		if pn, perr := w.Write([]byte(`package`)); perr != nil {
-			err = perr
-			return
-		} else {
-			n += int64(pn)
-		}
-		if pnn, pnerr := (*cu.PackageName).WriteTo(w); pnerr != nil {
-			err = pnerr
-			return
-		} else {
-			n += pnn
-		}
-		if sn, serr := w.Write([]byte(`;`)); serr != nil {
-			err = serr
-			return
-		} else {
-			n += int64(sn)
 		}
 	}
 	for _, i := range cu.Imports {
@@ -601,7 +580,7 @@ func (cu *CompilationUnit) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ConditionalExpression].
-func (cx *ConditionalExpression) WriteTo(w io.Writer) (n int64, err error) {
+func (cx ConditionalExpression) WriteTo(w io.Writer) (n int64, err error) {
 	if cn, cerr := cx.Condition.WriteTo(w); cerr != nil {
 		err = cerr
 		return
@@ -636,7 +615,7 @@ func (cx *ConditionalExpression) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Continue].
-func (c *Continue) WriteTo(w io.Writer) (n int64, err error) {
+func (c Continue) WriteTo(w io.Writer) (n int64, err error) {
 	if cn, cerr := w.Write([]byte(`continue`)); cerr != nil {
 		err = cerr
 		return
@@ -661,7 +640,7 @@ func (c *Continue) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [DoWhileLoop].
-func (dwl *DoWhileLoop) WriteTo(w io.Writer) (n int64, err error) {
+func (dwl DoWhileLoop) WriteTo(w io.Writer) (n int64, err error) {
 	if dn, derr := w.Write([]byte(`do`)); derr != nil {
 		err = derr
 		return
@@ -698,11 +677,17 @@ func (dwl *DoWhileLoop) WriteTo(w io.Writer) (n int64, err error) {
 	} else {
 		n += int64(cn)
 	}
+	if sn, serr := w.Write([]byte(`;`)); serr != nil {
+		err = serr
+		return
+	} else {
+		n += int64(sn)
+	}
 	return
 }
 
 // Implements [io.WriterTo] interface for [EnhancedForLoop].
-func (efl *EnhancedForLoop) WriteTo(w io.Writer) (n int64, err error) {
+func (efl EnhancedForLoop) WriteTo(w io.Writer) (n int64, err error) {
 	if fn, ferr := w.Write([]byte(`for`)); ferr != nil {
 		err = ferr
 		return
@@ -716,11 +701,17 @@ func (efl *EnhancedForLoop) WriteTo(w io.Writer) (n int64, err error) {
 	} else {
 		n += int64(on)
 	}
-	if vn, verr := efl.Variable.WriteTo(w); verr != nil {
-		err = verr
+	if tn, terr := efl.Variable.GetType().WriteTo(w); terr != nil {
+		err = terr
 		return
 	} else {
-		n += vn
+		n += tn
+	}
+	if nn, nerr := w.Write([]byte(efl.Variable.GetName())); nerr != nil {
+		err = nerr
+		return
+	} else {
+		n += int64(nn)
 	}
 	if cn, cerr := w.Write([]byte(`:`)); cerr != nil {
 		err = cerr
@@ -750,7 +741,7 @@ func (efl *EnhancedForLoop) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ExpressionStatement].
-func (xs *ExpressionStatement) WriteTo(w io.Writer) (n int64, err error) {
+func (xs ExpressionStatement) WriteTo(w io.Writer) (n int64, err error) {
 	if xn, xerr := xs.Expression.WriteTo(w); xerr != nil {
 		err = xerr
 		return
@@ -767,7 +758,7 @@ func (xs *ExpressionStatement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [MemberSelect].
-func (ms *MemberSelect) WriteTo(w io.Writer) (n int64, err error) {
+func (ms MemberSelect) WriteTo(w io.Writer) (n int64, err error) {
 	if xn, xerr := ms.Expression.WriteTo(w); xerr != nil {
 		err = xerr
 		return
@@ -790,7 +781,7 @@ func (ms *MemberSelect) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [InvokeMemberReference].
-func (imr *InvokeMemberReference) WriteTo(w io.Writer) (n int64, err error) {
+func (imr InvokeMemberReference) WriteTo(w io.Writer) (n int64, err error) {
 	if qen, qeerr := imr.QualifierExpression.WriteTo(w); qeerr != nil {
 		err = qeerr
 		return
@@ -847,7 +838,7 @@ func (imr *InvokeMemberReference) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [NewMemberReference].
-func (nmr *NewMemberReference) WriteTo(w io.Writer) (n int64, err error) {
+func (nmr NewMemberReference) WriteTo(w io.Writer) (n int64, err error) {
 	if qen, qeerr := nmr.QualifierExpression.WriteTo(w); qeerr != nil {
 		err = qeerr
 		return
@@ -904,7 +895,7 @@ func (nmr *NewMemberReference) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ForLoop].
-func (fl *ForLoop) WriteTo(w io.Writer) (n int64, err error) {
+func (fl ForLoop) WriteTo(w io.Writer) (n int64, err error) {
 	if fn, ferr := w.Write([]byte(`for`)); ferr != nil {
 		err = ferr
 		return
@@ -918,12 +909,32 @@ func (fl *ForLoop) WriteTo(w io.Writer) (n int64, err error) {
 		n += int64(on)
 	}
 	if ilen := len(fl.Initializer); ilen > 0 {
+		if in, ierr := fl.Initializer[0].GetType().WriteTo(w); ierr != nil {
+			err = ierr
+			return
+		} else {
+			n += in
+		}
 		for i := 0; i < ilen-1; i++ {
-			if in, ierr := fl.Initializer[i].WriteTo(w); ierr != nil {
+			if in, ierr := w.Write([]byte(fl.Initializer[i].GetName())); ierr != nil {
 				err = ierr
 				return
 			} else {
-				n += in
+				n += int64(in)
+			}
+			if fl.Initializer[i].GetInitializer() != nil {
+				if en, eerr := w.Write([]byte(`=`)); eerr != nil {
+					err = eerr
+					return
+				} else {
+					n += int64(en)
+				}
+				if in, ierr := fl.Initializer[i].GetInitializer().WriteTo(w); ierr != nil {
+					err = ierr
+					return
+				} else {
+					n += in
+				}
 			}
 			if cn, cerr := w.Write([]byte(`,`)); cerr != nil {
 				err = cerr
@@ -932,11 +943,25 @@ func (fl *ForLoop) WriteTo(w io.Writer) (n int64, err error) {
 				n += int64(cn)
 			}
 		}
-		if in, ierr := fl.Initializer[ilen-1].WriteTo(w); ierr != nil {
+		if in, ierr := w.Write([]byte(fl.Initializer[ilen-1].GetName())); ierr != nil {
 			err = ierr
 			return
 		} else {
-			n += in
+			n += int64(in)
+		}
+		if fl.Initializer[ilen-1].GetInitializer() != nil {
+			if en, eerr := w.Write([]byte(`=`)); eerr != nil {
+				err = eerr
+				return
+			} else {
+				n += int64(en)
+			}
+			if in, ierr := fl.Initializer[ilen-1].GetInitializer().WriteTo(w); ierr != nil {
+				err = ierr
+				return
+			} else {
+				n += in
+			}
 		}
 	}
 	if sn, serr := w.Write([]byte(`;`)); serr != nil {
@@ -946,7 +971,7 @@ func (fl *ForLoop) WriteTo(w io.Writer) (n int64, err error) {
 		n += int64(sn)
 	}
 	if fl.Condition != nil {
-		if cn, cerr := (*fl.Condition).WriteTo(w); cerr != nil {
+		if cn, cerr := fl.Condition.WriteTo(w); cerr != nil {
 			err = cerr
 			return
 		} else {
@@ -997,7 +1022,7 @@ func (fl *ForLoop) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Identifier].
-func (i *Identifier) WriteTo(w io.Writer) (n int64, err error) {
+func (i Identifier) WriteTo(w io.Writer) (n int64, err error) {
 	if nn, nerr := w.Write([]byte(i.Name)); nerr != nil {
 		err = nerr
 		return
@@ -1008,7 +1033,7 @@ func (i *Identifier) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [If].
-func (i *If) WriteTo(w io.Writer) (n int64, err error) {
+func (i If) WriteTo(w io.Writer) (n int64, err error) {
 	if in, ierr := w.Write([]byte(`if`)); ierr != nil {
 		err = ierr
 		return
@@ -1046,7 +1071,7 @@ func (i *If) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(en)
 		}
-		if en, eerr := (*i.ElseStatement).WriteTo(w); eerr != nil {
+		if en, eerr := i.ElseStatement.WriteTo(w); eerr != nil {
 			err = eerr
 			return
 		} else {
@@ -1057,7 +1082,7 @@ func (i *If) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Import].
-func (i *Import) WriteTo(w io.Writer) (n int64, err error) {
+func (i Import) WriteTo(w io.Writer) (n int64, err error) {
 	if i.Static {
 		if sn, serr := w.Write([]byte(`static`)); serr != nil {
 			err = serr
@@ -1078,11 +1103,17 @@ func (i *Import) WriteTo(w io.Writer) (n int64, err error) {
 	} else {
 		n += qin
 	}
+	if sn, serr := w.Write([]byte(`;`)); serr != nil {
+		err = serr
+		return
+	} else {
+		n += int64(sn)
+	}
 	return
 }
 
 // Implements [io.WriterTo] interface for [InstanceOf].
-func (io *InstanceOf) WriteTo(w io.Writer) (n int64, err error) {
+func (io InstanceOf) WriteTo(w io.Writer) (n int64, err error) {
 	if xn, xerr := io.Expression.WriteTo(w); xerr != nil {
 		err = xerr
 		return
@@ -1102,7 +1133,7 @@ func (io *InstanceOf) WriteTo(w io.Writer) (n int64, err error) {
 		n += tn
 	}
 	if io.Pattern != nil {
-		if pn, perr := (*io.Pattern).WriteTo(w); perr != nil {
+		if pn, perr := io.Pattern.WriteTo(w); perr != nil {
 			err = perr
 			return
 		} else {
@@ -1113,7 +1144,7 @@ func (io *InstanceOf) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [LabeledStatement].
-func (ls *LabeledStatement) WriteTo(w io.Writer) (n int64, err error) {
+func (ls LabeledStatement) WriteTo(w io.Writer) (n int64, err error) {
 	if ln, lerr := w.Write([]byte(ls.Label)); lerr != nil {
 		err = lerr
 		return
@@ -1136,7 +1167,7 @@ func (ls *LabeledStatement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Method].
-func (m *Method) WriteTo(w io.Writer) (n int64, err error) {
+func (m Method) WriteTo(w io.Writer) (n int64, err error) {
 	if mn, merr := m.Modifiers.WriteTo(w); merr != nil {
 		err = merr
 		return
@@ -1178,7 +1209,7 @@ func (m *Method) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	}
 	if m.ReturnType != nil {
-		if rtn, rterr := (*m.ReturnType).WriteTo(w); rterr != nil {
+		if rtn, rterr := m.ReturnType.WriteTo(w); rterr != nil {
 			err = rterr
 			return
 		} else {
@@ -1198,7 +1229,7 @@ func (m *Method) WriteTo(w io.Writer) (n int64, err error) {
 		n += int64(on)
 	}
 	if m.ReceiverParameter != nil {
-		if rpn, rperr := (*m.ReceiverParameter).WriteTo(w); rperr != nil {
+		if rpn, rperr := m.ReceiverParameter.WriteTo(w); rperr != nil {
 			err = rperr
 			return
 		} else {
@@ -1215,11 +1246,31 @@ func (m *Method) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	if plen := len(m.Parameters); plen > 0 {
 		for i := 0; i < plen-1; i++ {
-			if pn, perr := m.Parameters[i].WriteTo(w); perr != nil {
+			if pn, perr := m.Parameters[i].GetType().WriteTo(w); perr != nil {
 				err = perr
 				return
 			} else {
 				n += pn
+			}
+			if pn, perr := w.Write([]byte(m.Parameters[i].GetName())); perr != nil {
+				err = perr
+				return
+			} else {
+				n += int64(pn)
+			}
+			if m.Parameters[i].GetInitializer() != nil {
+				if en, eerr := w.Write([]byte(`=`)); eerr != nil {
+					err = eerr
+					return
+				} else {
+					n += int64(en)
+				}
+				if pn, perr := m.Parameters[i].GetInitializer().WriteTo(w); perr != nil {
+					err = perr
+					return
+				} else {
+					n += pn
+				}
 			}
 			if cn, cerr := w.Write([]byte(`,`)); cerr != nil {
 				err = cerr
@@ -1228,11 +1279,31 @@ func (m *Method) WriteTo(w io.Writer) (n int64, err error) {
 				n += int64(cn)
 			}
 		}
-		if pn, perr := m.Parameters[plen-1].WriteTo(w); perr != nil {
+		if pn, perr := m.Parameters[plen-1].GetType().WriteTo(w); perr != nil {
 			err = perr
 			return
 		} else {
 			n += pn
+		}
+		if pn, perr := w.Write([]byte(m.Parameters[plen-1].GetName())); perr != nil {
+			err = perr
+			return
+		} else {
+			n += int64(pn)
+		}
+		if m.Parameters[plen-1].GetInitializer() != nil {
+			if en, eerr := w.Write([]byte(`=`)); eerr != nil {
+				err = eerr
+				return
+			} else {
+				n += int64(en)
+			}
+			if pn, perr := m.Parameters[plen-1].GetInitializer().WriteTo(w); perr != nil {
+				err = perr
+				return
+			} else {
+				n += pn
+			}
 		}
 	}
 	if cn, cerr := w.Write([]byte(`)`)); cerr != nil {
@@ -1270,7 +1341,7 @@ func (m *Method) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	}
 	if m.Body != nil {
-		if bn, berr := (*m.Body).WriteTo(w); berr != nil {
+		if bn, berr := m.Body.WriteTo(w); berr != nil {
 			err = berr
 			return
 		} else {
@@ -1284,7 +1355,7 @@ func (m *Method) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(dn)
 		}
-		if dvn, dverr := (*m.DefaultValue).WriteTo(w); dverr != nil {
+		if dvn, dverr := m.DefaultValue.WriteTo(w); dverr != nil {
 			err = dverr
 			return
 		} else {
@@ -1295,7 +1366,7 @@ func (m *Method) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [MethodInvocation].
-func (mi *MethodInvocation) WriteTo(w io.Writer) (n int64, err error) {
+func (mi MethodInvocation) WriteTo(w io.Writer) (n int64, err error) {
 	if talen := len(mi.TypeArguments); talen > 0 {
 		if on, oerr := w.Write([]byte(`<`)); oerr != nil {
 			err = oerr
@@ -1374,7 +1445,7 @@ func (mi *MethodInvocation) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Modifiers].
-func (m *Modifiers) WriteTo(w io.Writer) (n int64, err error) {
+func (m Modifiers) WriteTo(w io.Writer) (n int64, err error) {
 	for _, flag := range m.Flags {
 		if fn, ferr := w.Write([]byte(modifiers[flag])); ferr != nil {
 			err = ferr
@@ -1395,7 +1466,7 @@ func (m *Modifiers) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [NewArray].
-func (na *NewArray) WriteTo(w io.Writer) (n int64, err error) {
+func (na NewArray) WriteTo(w io.Writer) (n int64, err error) {
 	if na.Type != nil {
 		if nn, nerr := w.Write([]byte(`new`)); nerr != nil {
 			err = nerr
@@ -1403,7 +1474,7 @@ func (na *NewArray) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(nn)
 		}
-		if tn, terr := (*na.Type).WriteTo(w); terr != nil {
+		if tn, terr := na.Type.WriteTo(w); terr != nil {
 			err = terr
 			return
 		} else {
@@ -1423,7 +1494,7 @@ func (na *NewArray) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += dn
 		}
-		if cn, cerr := w.Write([]byte(`[`)); cerr != nil {
+		if cn, cerr := w.Write([]byte(`]`)); cerr != nil {
 			err = cerr
 			return
 		} else {
@@ -1468,9 +1539,9 @@ func (na *NewArray) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [NewClass].
-func (nc *NewClass) WriteTo(w io.Writer) (n int64, err error) {
+func (nc NewClass) WriteTo(w io.Writer) (n int64, err error) {
 	if nc.EnclosingExpression != nil {
-		if exn, exerr := (*nc.EnclosingExpression).WriteTo(w); exerr != nil {
+		if exn, exerr := nc.EnclosingExpression.WriteTo(w); exerr != nil {
 			err = exerr
 			return
 		} else {
@@ -1564,7 +1635,7 @@ func (nc *NewClass) WriteTo(w io.Writer) (n int64, err error) {
 		n += int64(cn)
 	}
 	if nc.ClassBody != nil {
-		if cbn, cberr := (*nc.ClassBody).WriteTo(w); cberr != nil {
+		if cbn, cberr := nc.ClassBody.WriteTo(w); cberr != nil {
 			err = cberr
 			return
 		} else {
@@ -1575,7 +1646,7 @@ func (nc *NewClass) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ExpressionLambdaExpression].
-func (xlx *ExpressionLambdaExpression) WriteTo(w io.Writer) (n int64, err error) {
+func (xlx ExpressionLambdaExpression) WriteTo(w io.Writer) (n int64, err error) {
 	if on, oerr := w.Write([]byte(`(`)); oerr != nil {
 		err = oerr
 		return
@@ -1584,11 +1655,17 @@ func (xlx *ExpressionLambdaExpression) WriteTo(w io.Writer) (n int64, err error)
 	}
 	if plen := len(xlx.Parameters); plen > 0 {
 		for i := 0; i < plen-1; i++ {
-			if pn, perr := xlx.Parameters[i].WriteTo(w); perr != nil {
+			if pn, perr := xlx.Parameters[i].GetType().WriteTo(w); perr != nil {
 				err = perr
 				return
 			} else {
 				n += pn
+			}
+			if pn, perr := w.Write([]byte(xlx.Parameters[i].GetName())); perr != nil {
+				err = perr
+				return
+			} else {
+				n += int64(pn)
 			}
 			if cn, cerr := w.Write([]byte(`,`)); cerr != nil {
 				err = cerr
@@ -1597,11 +1674,17 @@ func (xlx *ExpressionLambdaExpression) WriteTo(w io.Writer) (n int64, err error)
 				n += int64(cn)
 			}
 		}
-		if pn, perr := xlx.Parameters[plen-1].WriteTo(w); perr != nil {
+		if pn, perr := xlx.Parameters[plen-1].GetType().WriteTo(w); perr != nil {
 			err = perr
 			return
 		} else {
 			n += pn
+		}
+		if pn, perr := w.Write([]byte(xlx.Parameters[plen-1].GetName())); perr != nil {
+			err = perr
+			return
+		} else {
+			n += int64(pn)
 		}
 	}
 	if cn, cerr := w.Write([]byte(`)`)); cerr != nil {
@@ -1626,7 +1709,7 @@ func (xlx *ExpressionLambdaExpression) WriteTo(w io.Writer) (n int64, err error)
 }
 
 // Implements [io.WriterTo] interface for [StatementLambdaExpression].
-func (slx *StatementLambdaExpression) WriteTo(w io.Writer) (n int64, err error) {
+func (slx StatementLambdaExpression) WriteTo(w io.Writer) (n int64, err error) {
 	if on, oerr := w.Write([]byte(`(`)); oerr != nil {
 		err = oerr
 		return
@@ -1635,11 +1718,17 @@ func (slx *StatementLambdaExpression) WriteTo(w io.Writer) (n int64, err error) 
 	}
 	if plen := len(slx.Parameters); plen > 0 {
 		for i := 0; i < plen-1; i++ {
-			if pn, perr := slx.Parameters[i].WriteTo(w); perr != nil {
+			if pn, perr := slx.Parameters[i].GetType().WriteTo(w); perr != nil {
 				err = perr
 				return
 			} else {
 				n += pn
+			}
+			if pn, perr := w.Write([]byte(slx.Parameters[i].GetName())); perr != nil {
+				err = perr
+				return
+			} else {
+				n += int64(pn)
 			}
 			if cn, cerr := w.Write([]byte(`,`)); cerr != nil {
 				err = cerr
@@ -1648,11 +1737,17 @@ func (slx *StatementLambdaExpression) WriteTo(w io.Writer) (n int64, err error) 
 				n += int64(cn)
 			}
 		}
-		if pn, perr := slx.Parameters[plen-1].WriteTo(w); perr != nil {
+		if pn, perr := slx.Parameters[plen-1].GetType().WriteTo(w); perr != nil {
 			err = perr
 			return
 		} else {
 			n += pn
+		}
+		if pn, perr := w.Write([]byte(slx.Parameters[plen-1].GetName())); perr != nil {
+			err = perr
+			return
+		} else {
+			n += int64(pn)
 		}
 	}
 	if cn, cerr := w.Write([]byte(`)`)); cerr != nil {
@@ -1677,7 +1772,7 @@ func (slx *StatementLambdaExpression) WriteTo(w io.Writer) (n int64, err error) 
 }
 
 // Implements [io.WriterTo] interface for [Package].
-func (p *Package) WriteTo(w io.Writer) (n int64, err error) {
+func (p Package) WriteTo(w io.Writer) (n int64, err error) {
 	for _, annotation := range p.Annotations {
 		if an, aerr := annotation.WriteTo(w); aerr != nil {
 			err = aerr
@@ -1708,7 +1803,7 @@ func (p *Package) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Parenthesized].
-func (p *Parenthesized) WriteTo(w io.Writer) (n int64, err error) {
+func (p Parenthesized) WriteTo(w io.Writer) (n int64, err error) {
 	if on, oerr := w.Write([]byte(`(`)); oerr != nil {
 		err = oerr
 		return
@@ -1731,18 +1826,24 @@ func (p *Parenthesized) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [BindingPattern].
-func (bp *BindingPattern) WriteTo(w io.Writer) (n int64, err error) {
-	if vn, verr := bp.Variable.WriteTo(w); verr != nil {
+func (bp BindingPattern) WriteTo(w io.Writer) (n int64, err error) {
+	if vn, verr := bp.Variable.GetType().WriteTo(w); verr != nil {
 		err = verr
 		return
 	} else {
 		n += vn
 	}
+	if vn, verr := w.Write([]byte(bp.Variable.GetName())); verr != nil {
+		err = verr
+		return
+	} else {
+		n += int64(vn)
+	}
 	return
 }
 
 // Implements [io.WriterTo] interface for [GuardedPattern].
-func (gp *GuardedPattern) WriteTo(w io.Writer) (n int64, err error) {
+func (gp GuardedPattern) WriteTo(w io.Writer) (n int64, err error) {
 	if pn, perr := gp.Pattern.WriteTo(w); perr != nil {
 		err = perr
 		return
@@ -1765,7 +1866,7 @@ func (gp *GuardedPattern) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ParenthesizedPattern].
-func (pp *ParenthesizedPattern) WriteTo(w io.Writer) (n int64, err error) {
+func (pp ParenthesizedPattern) WriteTo(w io.Writer) (n int64, err error) {
 	if on, oerr := w.Write([]byte(`(`)); oerr != nil {
 		err = oerr
 		return
@@ -1788,7 +1889,7 @@ func (pp *ParenthesizedPattern) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [DefaultCaseLabel].
-func (*DefaultCaseLabel) WriteTo(w io.Writer) (n int64, err error) {
+func (DefaultCaseLabel) WriteTo(w io.Writer) (n int64, err error) {
 	if dn, derr := w.Write([]byte(`default`)); derr != nil {
 		err = derr
 		return
@@ -1799,7 +1900,7 @@ func (*DefaultCaseLabel) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [PrimitiveType].
-func (pt *PrimitiveType) WriteTo(w io.Writer) (n int64, err error) {
+func (pt PrimitiveType) WriteTo(w io.Writer) (n int64, err error) {
 	switch pt.GetPrimitiveTypeKind() {
 	case BOOLEAN_TYPE_KIND:
 		if bn, berr := w.Write([]byte(`boolean`)); berr != nil {
@@ -1888,7 +1989,7 @@ func (pt *PrimitiveType) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Return].
-func (r *Return) WriteTo(w io.Writer) (n int64, err error) {
+func (r Return) WriteTo(w io.Writer) (n int64, err error) {
 	if rn, rerr := w.Write([]byte(`return`)); rerr != nil {
 		err = rerr
 		return
@@ -1896,7 +1997,7 @@ func (r *Return) WriteTo(w io.Writer) (n int64, err error) {
 		n += int64(rn)
 	}
 	if r.Expression != nil {
-		if xn, xerr := (*r.Expression).WriteTo(w); xerr != nil {
+		if xn, xerr := r.Expression.WriteTo(w); xerr != nil {
 			err = xerr
 			return
 		} else {
@@ -1913,7 +2014,7 @@ func (r *Return) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [EmptyStatement].
-func (*EmptyStatement) WriteTo(w io.Writer) (n int64, err error) {
+func (EmptyStatement) WriteTo(w io.Writer) (n int64, err error) {
 	if sn, serr := w.Write([]byte(`;`)); serr != nil {
 		err = serr
 		return
@@ -1924,7 +2025,7 @@ func (*EmptyStatement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Switch].
-func (s *Switch) WriteTo(w io.Writer) (n int64, err error) {
+func (s Switch) WriteTo(w io.Writer) (n int64, err error) {
 	if sn, serr := w.Write([]byte(`switch`)); serr != nil {
 		err = serr
 		return
@@ -1973,7 +2074,7 @@ func (s *Switch) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [SwitchExpression].
-func (sx *SwitchExpression) WriteTo(w io.Writer) (n int64, err error) {
+func (sx SwitchExpression) WriteTo(w io.Writer) (n int64, err error) {
 	if sn, serr := w.Write([]byte(`switch`)); serr != nil {
 		err = serr
 		return
@@ -2022,7 +2123,7 @@ func (sx *SwitchExpression) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Synchronized].
-func (s *Synchronized) WriteTo(w io.Writer) (n int64, err error) {
+func (s Synchronized) WriteTo(w io.Writer) (n int64, err error) {
 	if sn, serr := w.Write([]byte(`synchronized`)); serr != nil {
 		err = serr
 		return
@@ -2058,7 +2159,7 @@ func (s *Synchronized) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Throw].
-func (t *Throw) WriteTo(w io.Writer) (n int64, err error) {
+func (t Throw) WriteTo(w io.Writer) (n int64, err error) {
 	if tn, terr := w.Write([]byte(`throw`)); terr != nil {
 		err = terr
 		return
@@ -2081,7 +2182,7 @@ func (t *Throw) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Try].
-func (t *Try) WriteTo(w io.Writer) (n int64, err error) {
+func (t Try) WriteTo(w io.Writer) (n int64, err error) {
 	if tn, terr := w.Write([]byte(`try`)); terr != nil {
 		err = terr
 		return
@@ -2143,7 +2244,7 @@ func (t *Try) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(fn)
 		}
-		if fbn, fberr := (*t.FinallyBlock).WriteTo(w); fberr != nil {
+		if fbn, fberr := t.FinallyBlock.WriteTo(w); fberr != nil {
 			err = fberr
 			return
 		} else {
@@ -2154,7 +2255,7 @@ func (t *Try) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ParameterizedType].
-func (pt *ParameterizedType) WriteTo(w io.Writer) (n int64, err error) {
+func (pt ParameterizedType) WriteTo(w io.Writer) (n int64, err error) {
 	if tn, terr := pt.Type.WriteTo(w); terr != nil {
 		err = terr
 		return
@@ -2199,7 +2300,7 @@ func (pt *ParameterizedType) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [UnionType].
-func (ut *UnionType) WriteTo(w io.Writer) (n int64, err error) {
+func (ut UnionType) WriteTo(w io.Writer) (n int64, err error) {
 	if talen := len(ut.TypeAlternatives); talen > 0 {
 		for i := 0; i < talen-1; i++ {
 			if tan, taerr := ut.TypeAlternatives[i].WriteTo(w); taerr != nil {
@@ -2226,7 +2327,7 @@ func (ut *UnionType) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [IntersectionType].
-func (it *IntersectionType) WriteTo(w io.Writer) (n int64, err error) {
+func (it IntersectionType) WriteTo(w io.Writer) (n int64, err error) {
 	if blen := len(it.Bounds); blen > 0 {
 		for i := 0; i < blen-1; i++ {
 			if bn, berr := it.Bounds[i].WriteTo(w); berr != nil {
@@ -2253,7 +2354,7 @@ func (it *IntersectionType) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [TypeCast].
-func (tc *TypeCast) WriteTo(w io.Writer) (n int64, err error) {
+func (tc TypeCast) WriteTo(w io.Writer) (n int64, err error) {
 	if on, oerr := w.Write([]byte(`(`)); oerr != nil {
 		err = oerr
 		return
@@ -2282,7 +2383,7 @@ func (tc *TypeCast) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [TypeParameter].
-func (tp *TypeParameter) WriteTo(w io.Writer) (n int64, err error) {
+func (tp TypeParameter) WriteTo(w io.Writer) (n int64, err error) {
 	for _, annotation := range tp.Annotations {
 		if an, aerr := annotation.WriteTo(w); aerr != nil {
 			err = aerr
@@ -2297,7 +2398,7 @@ func (tp *TypeParameter) WriteTo(w io.Writer) (n int64, err error) {
 	} else {
 		n += int64(nn)
 	}
-	if alen := len(tp.Annotations); alen > 0 {
+	if alen := len(tp.Bounds); alen > 0 {
 		if en, eerr := w.Write([]byte(`extends`)); eerr != nil {
 			err = eerr
 			return
@@ -2329,7 +2430,7 @@ func (tp *TypeParameter) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Variable].
-func (v *Variable) WriteTo(w io.Writer) (n int64, err error) {
+func (v Variable) WriteTo(w io.Writer) (n int64, err error) {
 	if mn, merr := v.Modifiers.WriteTo(w); merr != nil {
 		err = merr
 		return
@@ -2355,7 +2456,7 @@ func (v *Variable) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(en)
 		}
-		if in, ierr := (*v.Initializer).WriteTo(w); ierr != nil {
+		if in, ierr := v.Initializer.WriteTo(w); ierr != nil {
 			err = ierr
 			return
 		} else {
@@ -2372,7 +2473,7 @@ func (v *Variable) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [WhileLoop].
-func (wl *WhileLoop) WriteTo(w io.Writer) (n int64, err error) {
+func (wl WhileLoop) WriteTo(w io.Writer) (n int64, err error) {
 	if wn, werr := w.Write([]byte(`while`)); werr != nil {
 		err = werr
 		return
@@ -2407,7 +2508,7 @@ func (wl *WhileLoop) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [PostfixIncrement].
-func (pi *PostfixIncrement) WriteTo(w io.Writer) (n int64, err error) {
+func (pi PostfixIncrement) WriteTo(w io.Writer) (n int64, err error) {
 	if xn, xerr := pi.Expression.WriteTo(w); xerr != nil {
 		err = xerr
 		return
@@ -2424,7 +2525,7 @@ func (pi *PostfixIncrement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [PostfixDecrement].
-func (pd *PostfixDecrement) WriteTo(w io.Writer) (n int64, err error) {
+func (pd PostfixDecrement) WriteTo(w io.Writer) (n int64, err error) {
 	if xn, xerr := pd.Expression.WriteTo(w); xerr != nil {
 		err = xerr
 		return
@@ -2441,7 +2542,7 @@ func (pd *PostfixDecrement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [PrefixIncrement].
-func (pi *PrefixIncrement) WriteTo(w io.Writer) (n int64, err error) {
+func (pi PrefixIncrement) WriteTo(w io.Writer) (n int64, err error) {
 	if dn, derr := w.Write([]byte(`++`)); derr != nil {
 		err = derr
 		return
@@ -2458,7 +2559,7 @@ func (pi *PrefixIncrement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [PrefixDecrement].
-func (pd *PrefixDecrement) WriteTo(w io.Writer) (n int64, err error) {
+func (pd PrefixDecrement) WriteTo(w io.Writer) (n int64, err error) {
 	if dn, derr := w.Write([]byte(`--`)); derr != nil {
 		err = derr
 		return
@@ -2475,7 +2576,7 @@ func (pd *PrefixDecrement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [UnaryPlus].
-func (up *UnaryPlus) WriteTo(w io.Writer) (n int64, err error) {
+func (up UnaryPlus) WriteTo(w io.Writer) (n int64, err error) {
 	if pn, perr := w.Write([]byte(`+`)); perr != nil {
 		err = perr
 		return
@@ -2492,7 +2593,7 @@ func (up *UnaryPlus) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [UnaryMinus].
-func (um *UnaryMinus) WriteTo(w io.Writer) (n int64, err error) {
+func (um UnaryMinus) WriteTo(w io.Writer) (n int64, err error) {
 	if mn, merr := w.Write([]byte(`-`)); merr != nil {
 		err = merr
 		return
@@ -2509,7 +2610,7 @@ func (um *UnaryMinus) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [BitwiseComplement].
-func (bc *BitwiseComplement) WriteTo(w io.Writer) (n int64, err error) {
+func (bc BitwiseComplement) WriteTo(w io.Writer) (n int64, err error) {
 	if bcn, bcerr := w.Write([]byte(`~`)); bcerr != nil {
 		err = bcerr
 		return
@@ -2526,7 +2627,7 @@ func (bc *BitwiseComplement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [LogicalComplement].
-func (lc *LogicalComplement) WriteTo(w io.Writer) (n int64, err error) {
+func (lc LogicalComplement) WriteTo(w io.Writer) (n int64, err error) {
 	if lcn, lcerr := w.Write([]byte(`!`)); lcerr != nil {
 		err = lcerr
 		return
@@ -2543,7 +2644,7 @@ func (lc *LogicalComplement) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Multiply].
-func (m *Multiply) WriteTo(w io.Writer) (n int64, err error) {
+func (m Multiply) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := m.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2566,7 +2667,7 @@ func (m *Multiply) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Divide].
-func (d *Divide) WriteTo(w io.Writer) (n int64, err error) {
+func (d Divide) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := d.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2589,7 +2690,7 @@ func (d *Divide) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Remainder].
-func (r *Remainder) WriteTo(w io.Writer) (n int64, err error) {
+func (r Remainder) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := r.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2612,7 +2713,7 @@ func (r *Remainder) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Plus].
-func (p *Plus) WriteTo(w io.Writer) (n int64, err error) {
+func (p Plus) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := p.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2635,7 +2736,7 @@ func (p *Plus) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Minus].
-func (m *Minus) WriteTo(w io.Writer) (n int64, err error) {
+func (m Minus) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := m.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2658,7 +2759,7 @@ func (m *Minus) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [LeftShift].
-func (ls *LeftShift) WriteTo(w io.Writer) (n int64, err error) {
+func (ls LeftShift) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := ls.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2681,7 +2782,7 @@ func (ls *LeftShift) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [RightShift].
-func (rs *RightShift) WriteTo(w io.Writer) (n int64, err error) {
+func (rs RightShift) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := rs.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2704,7 +2805,7 @@ func (rs *RightShift) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [UnsignedRightShift].
-func (urs *UnsignedRightShift) WriteTo(w io.Writer) (n int64, err error) {
+func (urs UnsignedRightShift) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := urs.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2727,7 +2828,7 @@ func (urs *UnsignedRightShift) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [LessThan].
-func (lt *LessThan) WriteTo(w io.Writer) (n int64, err error) {
+func (lt LessThan) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := lt.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2750,7 +2851,7 @@ func (lt *LessThan) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [GreaterThan].
-func (gt *GreaterThan) WriteTo(w io.Writer) (n int64, err error) {
+func (gt GreaterThan) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := gt.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2773,7 +2874,7 @@ func (gt *GreaterThan) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [LessThanEqual].
-func (lte *LessThanEqual) WriteTo(w io.Writer) (n int64, err error) {
+func (lte LessThanEqual) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := lte.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2796,7 +2897,7 @@ func (lte *LessThanEqual) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [GreaterThanEqual].
-func (gte *GreaterThanEqual) WriteTo(w io.Writer) (n int64, err error) {
+func (gte GreaterThanEqual) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := gte.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2819,7 +2920,7 @@ func (gte *GreaterThanEqual) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [EqualTo].
-func (eq *EqualTo) WriteTo(w io.Writer) (n int64, err error) {
+func (eq EqualTo) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := eq.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2842,7 +2943,7 @@ func (eq *EqualTo) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [NotEqualTo].
-func (neq *NotEqualTo) WriteTo(w io.Writer) (n int64, err error) {
+func (neq NotEqualTo) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := neq.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2865,7 +2966,7 @@ func (neq *NotEqualTo) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [And].
-func (a *And) WriteTo(w io.Writer) (n int64, err error) {
+func (a And) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := a.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2888,7 +2989,7 @@ func (a *And) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Xor].
-func (x *Xor) WriteTo(w io.Writer) (n int64, err error) {
+func (x Xor) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := x.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2911,7 +3012,7 @@ func (x *Xor) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Or].
-func (or *Or) WriteTo(w io.Writer) (n int64, err error) {
+func (or Or) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := or.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2934,7 +3035,7 @@ func (or *Or) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ConditionalAnd].
-func (ca *ConditionalAnd) WriteTo(w io.Writer) (n int64, err error) {
+func (ca ConditionalAnd) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := ca.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2957,7 +3058,7 @@ func (ca *ConditionalAnd) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ConditionalOr].
-func (or *ConditionalOr) WriteTo(w io.Writer) (n int64, err error) {
+func (or ConditionalOr) WriteTo(w io.Writer) (n int64, err error) {
 	if lon, loerr := or.LeftOperand.WriteTo(w); loerr != nil {
 		err = loerr
 		return
@@ -2980,7 +3081,7 @@ func (or *ConditionalOr) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [MultiplyAssignment].
-func (ma *MultiplyAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (ma MultiplyAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := ma.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3003,7 +3104,7 @@ func (ma *MultiplyAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [DivideAssignment].
-func (da *DivideAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (da DivideAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := da.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3026,7 +3127,7 @@ func (da *DivideAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [RemainderAssignment].
-func (ra *RemainderAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (ra RemainderAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := ra.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3049,7 +3150,7 @@ func (ra *RemainderAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [PlusAssignment].
-func (pa *PlusAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (pa PlusAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := pa.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3072,7 +3173,7 @@ func (pa *PlusAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [MinusAssignment].
-func (ma *MinusAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (ma MinusAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := ma.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3095,7 +3196,7 @@ func (ma *MinusAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [LeftShiftAssignment].
-func (lsa *LeftShiftAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (lsa LeftShiftAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := lsa.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3118,7 +3219,7 @@ func (lsa *LeftShiftAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [RightShiftAssignment].
-func (rsa *RightShiftAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (rsa RightShiftAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := rsa.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3141,14 +3242,14 @@ func (rsa *RightShiftAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [UnsignedRightShiftAssignment].
-func (ursa *UnsignedRightShiftAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (ursa UnsignedRightShiftAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := ursa.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
 	} else {
 		n += vn
 	}
-	if ursan, ursaerr := w.Write([]byte(`>>=`)); ursaerr != nil {
+	if ursan, ursaerr := w.Write([]byte(`>>>=`)); ursaerr != nil {
 		err = ursaerr
 		return
 	} else {
@@ -3164,7 +3265,7 @@ func (ursa *UnsignedRightShiftAssignment) WriteTo(w io.Writer) (n int64, err err
 }
 
 // Implements [io.WriterTo] interface for [AndAssignment].
-func (aa *AndAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (aa AndAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := aa.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3187,7 +3288,7 @@ func (aa *AndAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [XorAssignment].
-func (xa *XorAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (xa XorAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := xa.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3210,7 +3311,7 @@ func (xa *XorAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [OrAssignment].
-func (oa *OrAssignment) WriteTo(w io.Writer) (n int64, err error) {
+func (oa OrAssignment) WriteTo(w io.Writer) (n int64, err error) {
 	if vn, verr := oa.Variable.WriteTo(w); verr != nil {
 		err = verr
 		return
@@ -3233,7 +3334,7 @@ func (oa *OrAssignment) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [IntLiteral].
-func (il *IntLiteral) WriteTo(w io.Writer) (n int64, err error) {
+func (il IntLiteral) WriteTo(w io.Writer) (n int64, err error) {
 	if iln, ilerr := w.Write([]byte(il.Value)); ilerr != nil {
 		err = ilerr
 		return
@@ -3244,7 +3345,7 @@ func (il *IntLiteral) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [LongLiteral].
-func (ll *LongLiteral) WriteTo(w io.Writer) (n int64, err error) {
+func (ll LongLiteral) WriteTo(w io.Writer) (n int64, err error) {
 	if lln, llerr := w.Write([]byte(ll.Value)); llerr != nil {
 		err = llerr
 		return
@@ -3255,7 +3356,7 @@ func (ll *LongLiteral) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [FloatLiteral].
-func (fl *FloatLiteral) WriteTo(w io.Writer) (n int64, err error) {
+func (fl FloatLiteral) WriteTo(w io.Writer) (n int64, err error) {
 	if fln, flerr := w.Write([]byte(fl.Value)); flerr != nil {
 		err = flerr
 		return
@@ -3266,7 +3367,7 @@ func (fl *FloatLiteral) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [DoubleLiteral].
-func (dl *DoubleLiteral) WriteTo(w io.Writer) (n int64, err error) {
+func (dl DoubleLiteral) WriteTo(w io.Writer) (n int64, err error) {
 	if dln, dlerr := w.Write([]byte(dl.Value)); dlerr != nil {
 		err = dlerr
 		return
@@ -3277,7 +3378,7 @@ func (dl *DoubleLiteral) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [BooleanLiteral].
-func (bl *BooleanLiteral) WriteTo(w io.Writer) (n int64, err error) {
+func (bl BooleanLiteral) WriteTo(w io.Writer) (n int64, err error) {
 	if bl.Value {
 		if bln, blerr := w.Write([]byte(`true`)); blerr != nil {
 			err = blerr
@@ -3297,7 +3398,7 @@ func (bl *BooleanLiteral) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [CharLiteral].
-func (cl *CharLiteral) WriteTo(w io.Writer) (n int64, err error) {
+func (cl CharLiteral) WriteTo(w io.Writer) (n int64, err error) {
 	if cln, clerr := w.Write([]byte(`'` + cl.Value + `'`)); clerr != nil {
 		err = clerr
 		return
@@ -3308,7 +3409,7 @@ func (cl *CharLiteral) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [StringLiteral].
-func (sl *StringLiteral) WriteTo(w io.Writer) (n int64, err error) {
+func (sl StringLiteral) WriteTo(w io.Writer) (n int64, err error) {
 	if sln, slerr := w.Write([]byte(`"` + sl.Value + `"`)); slerr != nil {
 		err = slerr
 		return
@@ -3319,7 +3420,7 @@ func (sl *StringLiteral) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [NullLiteral].
-func (*NullLiteral) WriteTo(w io.Writer) (n int64, err error) {
+func (NullLiteral) WriteTo(w io.Writer) (n int64, err error) {
 	if nln, nlerr := w.Write([]byte(`null`)); nlerr != nil {
 		err = nlerr
 		return
@@ -3330,7 +3431,7 @@ func (*NullLiteral) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [UnboundedWildcard].
-func (*UnboundedWildcard) WriteTo(w io.Writer) (n int64, err error) {
+func (UnboundedWildcard) WriteTo(w io.Writer) (n int64, err error) {
 	if qn, qerr := w.Write([]byte(`?`)); qerr != nil {
 		err = qerr
 		return
@@ -3341,7 +3442,7 @@ func (*UnboundedWildcard) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [ExtendsWildcard].
-func (xw *ExtendsWildcard) WriteTo(w io.Writer) (n int64, err error) {
+func (xw ExtendsWildcard) WriteTo(w io.Writer) (n int64, err error) {
 	if qn, qerr := w.Write([]byte(`?`)); qerr != nil {
 		err = qerr
 		return
@@ -3364,7 +3465,7 @@ func (xw *ExtendsWildcard) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [SuperWildcard].
-func (sw *SuperWildcard) WriteTo(w io.Writer) (n int64, err error) {
+func (sw SuperWildcard) WriteTo(w io.Writer) (n int64, err error) {
 	if qn, qerr := w.Write([]byte(`?`)); qerr != nil {
 		err = qerr
 		return
@@ -3387,13 +3488,13 @@ func (sw *SuperWildcard) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Erroneous].
-func (*Erroneous) WriteTo(w io.Writer) (n int64, err error) {
+func (Erroneous) WriteTo(w io.Writer) (n int64, err error) {
 	err = fmt.Errorf("unexpected erroneous")
 	return
 }
 
 // Implements [io.WriterTo] interface for [Interface].
-func (i *Interface) WriteTo(w io.Writer) (n int64, err error) {
+func (i Interface) WriteTo(w io.Writer) (n int64, err error) {
 	if mn, merr := i.Modifiers.WriteTo(w); merr != nil {
 		err = merr
 		return
@@ -3453,7 +3554,7 @@ func (i *Interface) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(en)
 		}
-		if ecn, ecerr := (*i.ExtendsClause).WriteTo(w); ecerr != nil {
+		if ecn, ecerr := i.ExtendsClause.WriteTo(w); ecerr != nil {
 			err = ecerr
 			return
 		} else {
@@ -3512,7 +3613,7 @@ func (i *Interface) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Enum].
-func (e *Enum) WriteTo(w io.Writer) (n int64, err error) {
+func (e Enum) WriteTo(w io.Writer) (n int64, err error) {
 	if mn, merr := e.Modifiers.WriteTo(w); merr != nil {
 		err = merr
 		return
@@ -3555,7 +3656,7 @@ func (e *Enum) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [AnnotationType].
-func (at *AnnotationType) WriteTo(w io.Writer) (n int64, err error) {
+func (at AnnotationType) WriteTo(w io.Writer) (n int64, err error) {
 	if mn, merr := at.Modifiers.WriteTo(w); merr != nil {
 		err = merr
 		return
@@ -3598,7 +3699,7 @@ func (at *AnnotationType) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Module].
-func (m *Module) WriteTo(w io.Writer) (n int64, err error) {
+func (m Module) WriteTo(w io.Writer) (n int64, err error) {
 	for _, annotation := range m.Annotations {
 		if an, aerr := annotation.WriteTo(w); aerr != nil {
 			err = aerr
@@ -3651,7 +3752,7 @@ func (m *Module) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Exports].
-func (x *Exports) WriteTo(w io.Writer) (n int64, err error) {
+func (x Exports) WriteTo(w io.Writer) (n int64, err error) {
 	if xn, xerr := w.Write([]byte(`exports`)); xerr != nil {
 		err = xerr
 		return
@@ -3692,11 +3793,17 @@ func (x *Exports) WriteTo(w io.Writer) (n int64, err error) {
 			n += mnn
 		}
 	}
+	if sn, serr := w.Write([]byte(`;`)); serr != nil {
+		err = serr
+		return
+	} else {
+		n += int64(sn)
+	}
 	return
 }
 
 // Implements [io.WriterTo] interface for [Opens].
-func (o *Opens) WriteTo(w io.Writer) (n int64, err error) {
+func (o Opens) WriteTo(w io.Writer) (n int64, err error) {
 	if on, oerr := w.Write([]byte(`opens`)); oerr != nil {
 		err = oerr
 		return
@@ -3737,11 +3844,17 @@ func (o *Opens) WriteTo(w io.Writer) (n int64, err error) {
 			n += mnn
 		}
 	}
+	if sn, serr := w.Write([]byte(`;`)); serr != nil {
+		err = serr
+		return
+	} else {
+		n += int64(sn)
+	}
 	return
 }
 
 // Implements [io.WriterTo] interface for [Provides].
-func (p *Provides) WriteTo(w io.Writer) (n int64, err error) {
+func (p Provides) WriteTo(w io.Writer) (n int64, err error) {
 	if pn, perr := w.Write([]byte(`provides`)); perr != nil {
 		err = perr
 		return
@@ -3782,11 +3895,17 @@ func (p *Provides) WriteTo(w io.Writer) (n int64, err error) {
 			n += inn
 		}
 	}
+	if sn, serr := w.Write([]byte(`;`)); serr != nil {
+		err = serr
+		return
+	} else {
+		n += int64(sn)
+	}
 	return
 }
 
 // Implements [io.WriterTo] interface for [Record].
-func (r *Record) WriteTo(w io.Writer) (n int64, err error) {
+func (r Record) WriteTo(w io.Writer) (n int64, err error) {
 	if mn, merr := r.Modifiers.WriteTo(w); merr != nil {
 		err = merr
 		return
@@ -3857,7 +3976,7 @@ func (r *Record) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // Implements [io.WriterTo] interface for [Requires].
-func (r *Requires) WriteTo(w io.Writer) (n int64, err error) {
+func (r Requires) WriteTo(w io.Writer) (n int64, err error) {
 	if rn, rerr := w.Write([]byte(`requires`)); rerr != nil {
 		err = rerr
 		return
@@ -3886,11 +4005,17 @@ func (r *Requires) WriteTo(w io.Writer) (n int64, err error) {
 	} else {
 		n += int64(mnn)
 	}
+	if sn, serr := w.Write([]byte(`;`)); serr != nil {
+		err = serr
+		return
+	} else {
+		n += int64(sn)
+	}
 	return
 }
 
 // Implements [io.WriterTo] interface for [Uses].
-func (u *Uses) WriteTo(w io.Writer) (n int64, err error) {
+func (u Uses) WriteTo(w io.Writer) (n int64, err error) {
 	if un, uerr := w.Write([]byte(`uses`)); uerr != nil {
 		err = uerr
 		return
@@ -3903,11 +4028,17 @@ func (u *Uses) WriteTo(w io.Writer) (n int64, err error) {
 	} else {
 		n += int64(snn)
 	}
+	if sn, serr := w.Write([]byte(`;`)); serr != nil {
+		err = serr
+		return
+	} else {
+		n += int64(sn)
+	}
 	return
 }
 
 // Implements [io.WriterTo] interface for [Yield].
-func (y *Yield) WriteTo(w io.Writer) (n int64, err error) {
+func (y Yield) WriteTo(w io.Writer) (n int64, err error) {
 	if yn, yerr := w.Write([]byte(`yield`)); yerr != nil {
 		err = yerr
 		return

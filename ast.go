@@ -353,7 +353,7 @@ type InstanceOfNode interface {
 	ExpressionNode
 	GetExpression() ExpressionNode // Returns the expression to be tested.
 	GetType() Node                 // Returns the type for which to check.
-	GetPattern() *PatternNode      // Returns the tested pattern, or nil if this instanceof does not use a pattern.
+	GetPattern() PatternNode       // Returns the tested pattern, or nil if this instanceof does not use a pattern.
 	instanceOfNode()               // instanceOfNode() ensures that only instance of nodes can be assigned to an InstanceOfNode.
 }
 
@@ -430,7 +430,7 @@ type MethodInvocationNode interface {
 //	new type dimensions [ ] initializers
 type NewArrayNode interface {
 	ExpressionNode
-	GetType() *Node                        // Returns the base type of the expression. May be nil for an array initializer expression.
+	GetType() Node                         // Returns the base type of the expression. May be nil for an array initializer expression.
 	GetDimensions() []ExpressionNode       // Returns the dimension expressions for the type.
 	GetInitializers() []ExpressionNode     // Returns the initializer expressions.
 	GetAnnotations() []AnnotationNode      // Returns the annotations on the base type.
@@ -451,12 +451,12 @@ type NewArrayNode interface {
 //	enclosingExpression.new identifier ( arguments )
 type NewClassNode interface {
 	ExpressionNode
-	GetEnclosingExpression() *ExpressionNode // Returns the enclosing expression, or nil if none.
-	GetTypeArguments() []Node                // Returns the type arguments for the object being created.
-	GetIdentifier() ExpressionNode           // Returns the name of the class being instantiated.
-	GetArguments() []ExpressionNode          // Returns the arguments for the constructor to be invoked.
-	GetClassBody() *ClassNode                // Returns the class body if an anonymous class is being instantiated, and nil otherwise.
-	newClassNode()                           // newClassNode() ensures that only new class nodes can be assigned to a NewClassNode.
+	GetEnclosingExpression() ExpressionNode // Returns the enclosing expression, or nil if none.
+	GetTypeArguments() []Node               // Returns the type arguments for the object being created.
+	GetIdentifier() ExpressionNode          // Returns the name of the class being instantiated.
+	GetArguments() []ExpressionNode         // Returns the arguments for the constructor to be invoked.
+	GetClassBody() ClassNode                // Returns the class body if an anonymous class is being instantiated, and nil otherwise.
+	newClassNode()                          // newClassNode() ensures that only new class nodes can be assigned to a NewClassNode.
 }
 
 // A tree node for a parenthesized expression.
@@ -552,7 +552,7 @@ type CaseNode interface {
 	GetExpressions() []ExpressionNode // Returns the labels for this case. For default case, returns an empty list.
 	GetLabels() []CaseLabelNode       // Returns the labels for this case. For "default" case return a list with a single element, [DefaultCaseLabelNode].
 	GetStatements() []StatementNode   // For case with kind [STATEMENT_CASE_KIND], returns the statements labeled by the case. Returns nil for case with kind [RULE_CASE_KIND].
-	GetBody() *Node                   // For case with kind [RULE_CASE_KIND], returns the statement or expression after the arrow. Returns nil for case with kind [STATEMENT_CASE_KIND].
+	GetBody() Node                    // For case with kind [RULE_CASE_KIND], returns the statement or expression after the arrow. Returns nil for case with kind [STATEMENT_CASE_KIND].
 	GetCaseKind() CaseKind            // Returns the kind of this case.
 	caseNode()                        // caseNode() ensures that only case nodes can be assigned to a CaseNode.
 }
@@ -572,13 +572,11 @@ type CatchNode interface {
 // Represents the abstract syntax tree for ordinary compilation units and modular compilation units.
 type CompilationUnitNode interface {
 	Node
-	GetModule() *ModuleNode                  // Returns the module tree associated with this compilation unit, or nil if there is no module declaration.
-	GetPackageAnnotations() []AnnotationNode // Returns the annotations listed on any package declaration at the head of this compilation unit, or nil if there is no package declaration.
-	GetPackageName() *ExpressionNode         // Returns the name contained in any package declaration at the head of this compilation unit, or nil if there is no package declaration.
-	GetPackage() *PackageNode                // Returns the package tree associated with this compilation unit, or nil if there is no package declaration.
-	GetImports() []ImportNode                // Returns the import declarations appearing in this compilation unit, or an empty list if there are no import declarations.
-	GetTypeDecls() []Node                    // Returns the type declarations appearing in this compilation unit, or an empty list if there are no type declarations. The list may also include empty statements resulting from extraneous semicolons. A modular compilation unit does not contain any type declarations.
-	compilationUnitNode()                    // compilationUnitNode() ensures that only compilation unit nodes can be assigned to a CompilationUnitNode.
+	GetModule() ModuleNode    // Returns the module tree associated with this compilation unit, or nil if there is no module declaration.
+	GetPackage() PackageNode  // Returns the package tree associated with this compilation unit, or nil if there is no package declaration.
+	GetImports() []ImportNode // Returns the import declarations appearing in this compilation unit, or an empty list if there are no import declarations.
+	GetTypeDecls() []Node     // Returns the type declarations appearing in this compilation unit, or an empty list if there are no type declarations. The list may also include empty statements resulting from extraneous semicolons. A modular compilation unit does not contain any type declarations.
+	compilationUnitNode()     // compilationUnitNode() ensures that only compilation unit nodes can be assigned to a CompilationUnitNode.
 }
 
 // A super-type for all the directives in a ModuleTree.
@@ -681,13 +679,13 @@ type MethodNode interface {
 	Node
 	GetModifiers() ModifiersNode            // Returns the modifiers, including any annotations for the method being declared.
 	GetName() string                        // Returns the name of the method being declared.
-	GetReturnType() *Node                   // Returns the return type of the method being declared. Returns nil for a constructor.
+	GetReturnType() Node                    // Returns the return type of the method being declared. Returns nil for a constructor.
 	GetTypeParameters() []TypeParameterNode // Returns the type parameters of the method being declared.
 	GetParameters() []VariableNode          // Returns the parameters of the method being declared.
-	GetReceiverParameter() *VariableNode    // Return an explicit receiver parameter ("this" parameter), or nil if none.
+	GetReceiverParameter() VariableNode     // Return an explicit receiver parameter ("this" parameter), or nil if none.
 	GetThrows() []ExpressionNode            // Returns the exceptions listed as being thrown by this method.
-	GetBody() *BlockNode                    // Returns the method body, or nil if this is an abstract or native method.
-	GetDefaultValue() *Node                 // Returns the default value, if this is an element within an annotation type declaration. Returns nil otherwise.
+	GetBody() BlockNode                     // Returns the method body, or nil if this is an abstract or native method.
+	GetDefaultValue() Node                  // Returns the default value, if this is an element within an annotation type declaration. Returns nil otherwise.
 	methodNode()                            // methodNode() ensures that only method nodes can be assigned to a MethodNode.
 }
 
@@ -764,7 +762,7 @@ type StatementNode interface {
 type AssertNode interface {
 	StatementNode
 	GetCondition() ExpressionNode // Returns the condition being asserted.
-	GetDetail() *ExpressionNode   // Returns the detail expression.
+	GetDetail() ExpressionNode    // Returns the detail expression.
 	assertNode()                  // assertNode() ensures that only assert nodes can be assigned to an AssertNode.
 }
 
@@ -809,7 +807,7 @@ type ClassNode interface {
 	GetModifiers() ModifiersNode            // Returns the modifiers, including any annotations, for this type declaration.
 	GetSimpleName() string                  // Returns the simple name of this type declaration.
 	GetTypeParameters() []TypeParameterNode // Returns any type parameters of this type declaration.
-	GetExtendsClause() *Node                // Returns the supertype of this type declaration, or nil if none is provided.
+	GetExtendsClause() Node                 // Returns the supertype of this type declaration, or nil if none is provided.
 	GetImplementsClause() []Node            // Returns the interfaces implemented by this type declaration.
 	GetPermitsClause() []Node               // Returns the subclasses permitted by this type declaration.
 	GetMembers() []Node                     // Returns the members declared in this type declaration.
@@ -880,11 +878,11 @@ type ExpressionStatementNode interface {
 //	    statement
 type ForLoopNode interface {
 	StatementNode
-	GetInitializer() []StatementNode      // Returns any initializers of the "for" statement. The result will be an empty list if there are no initializers.
-	GetCondition() *ExpressionNode        // Returns the condition of the "for" statement. May be nil if there is no condition.
-	GetUpdate() []ExpressionStatementNode // Returns any update expressions of the "for" statement.
-	GetStatement() StatementNode          // Returns the body of the "for" statement.
-	forLoopNode()                         // forLoopNode() ensures that only for-loop nodes can be assigned to a ForLoopNode.
+	GetInitializer() []VariableNode // Returns any initializers of the "for" statement. The result will be an empty list if there are no initializers.
+	GetCondition() ExpressionNode   // Returns the condition of the "for" statement. May be nil if there is no condition.
+	GetUpdate() []ExpressionNode    // Returns any update expressions of the "for" statement.
+	GetStatement() StatementNode    // Returns the body of the "for" statement.
+	forLoopNode()                   // forLoopNode() ensures that only for-loop nodes can be assigned to a ForLoopNode.
 }
 
 // A tree node for an "if" statement.
@@ -899,10 +897,10 @@ type ForLoopNode interface {
 //	    elseStatement
 type IfNode interface {
 	StatementNode
-	GetCondition() ExpressionNode     // Returns the condition of the if-statement.
-	GetThenStatement() StatementNode  // Returns the statement to be executed if the condition is true.
-	GetElseStatement() *StatementNode // Returns the statement to be executed if the condition is false, or nil if there is no such statement.
-	ifNode()                          // ifNode() ensures that only if nodes can be assigned to an IfNode.
+	GetCondition() ExpressionNode    // Returns the condition of the if-statement.
+	GetThenStatement() StatementNode // Returns the statement to be executed if the condition is true.
+	GetElseStatement() StatementNode // Returns the statement to be executed if the condition is false, or nil if there is no such statement.
+	ifNode()                         // ifNode() ensures that only if nodes can be assigned to an IfNode.
 }
 
 // A tree node for a labeled statement.
@@ -924,8 +922,8 @@ type LabeledStatementNode interface {
 //	return expression;
 type ReturnNode interface {
 	StatementNode
-	GetExpression() *ExpressionNode // Returns the expression to be returned.
-	returnNode()                    // returnNode() ensures that only return nodes can be assigned to a ReturnNode.
+	GetExpression() ExpressionNode // Returns the expression to be returned.
+	returnNode()                   // returnNode() ensures that only return nodes can be assigned to a ReturnNode.
 }
 
 // A tree node for a "switch" statement.
@@ -973,11 +971,11 @@ type ThrowNode interface {
 //	    finallyBlock
 type TryNode interface {
 	StatementNode
-	GetBlock() BlockNode         // Returns the block of the "try" statement.
-	GetCatches() []CatchNode     // Returns any catch blocks provided in the "try" statement. The result will be an empty list if there are no catch blocks.
-	GetFinallyBlock() *BlockNode // Returns the finally block provided in the "try" statement, or nil if there is none.
-	GetResources() []Node        // Returns any resource declarations provided in the "try" statement. The result will be an empty list if there are no resource declarations.
-	tryNode()                    // tryNode() ensures that only try nodes can be assigned to a TryNode.
+	GetBlock() BlockNode        // Returns the block of the "try" statement.
+	GetCatches() []CatchNode    // Returns any catch blocks provided in the "try" statement. The result will be an empty list if there are no catch blocks.
+	GetFinallyBlock() BlockNode // Returns the finally block provided in the "try" statement, or nil if there is none.
+	GetResources() []Node       // Returns any resource declarations provided in the "try" statement. The result will be an empty list if there are no resource declarations.
+	tryNode()                   // tryNode() ensures that only try nodes can be assigned to a TryNode.
 }
 
 // A tree node for a variable declaration.
@@ -988,12 +986,12 @@ type TryNode interface {
 //	modifiers type qualified-name.this
 type VariableNode interface {
 	StatementNode
-	GetModifiers() ModifiersNode        // Returns the modifiers, including any annotations, on the declaration.
-	GetName() string                    // Returns the name of the variable being declared.
-	GetNameExpression() *ExpressionNode // Returns the qualified identifier for the name being "declared". This is only used in certain cases for the receiver of a method declaration. Returns nil in all other cases.
-	GetType() Node                      // Returns the type of the variable being declared.
-	GetInitializer() *ExpressionNode    // Returns the initializer for the variable, or nil if none.
-	variableNode()                      // variableNode() ensures that only variable nodes can be assigned to a VariableNode.
+	GetModifiers() ModifiersNode       // Returns the modifiers, including any annotations, on the declaration.
+	GetName() string                   // Returns the name of the variable being declared.
+	GetNameExpression() ExpressionNode // Returns the qualified identifier for the name being "declared". This is only used in certain cases for the receiver of a method declaration. Returns nil in all other cases.
+	GetType() Node                     // Returns the type of the variable being declared.
+	GetInitializer() ExpressionNode    // Returns the initializer for the variable, or nil if none.
+	variableNode()                     // variableNode() ensures that only variable nodes can be assigned to a VariableNode.
 }
 
 // A tree node for a "while" loop statement.
@@ -1052,6 +1050,6 @@ type UnionTypeNode interface {
 //	? super bound
 type WildcardNode interface {
 	Node
-	GetBound() *Node // Returns the bound of the wildcard.
-	wildcardNode()   // wildcardNode() ensures that only wildcard nodes can be assigned to a WildcardNode.
+	GetBound() Node // Returns the bound of the wildcard.
+	wildcardNode()  // wildcardNode() ensures that only wildcard nodes can be assigned to a WildcardNode.
 }

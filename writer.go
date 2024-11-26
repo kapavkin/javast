@@ -3,6 +3,7 @@ package javast
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 var modifiers = [...]string{
@@ -21,6 +22,10 @@ var modifiers = [...]string{
 	NATIVE_MODIFIER:       "native",
 	STRICTFP_MODIFIER:     "strictfp",
 }
+
+type WriterFunc func([]byte) (int, error)
+
+func (f WriterFunc) Write(p []byte) (int, error) { return f(p) }
 
 // Implements [io.WriterTo] interface for [AnnotatedType].
 func (at AnnotatedType) WriteTo(w io.Writer) (n int64, err error) {
@@ -1083,6 +1088,12 @@ func (i If) WriteTo(w io.Writer) (n int64, err error) {
 
 // Implements [io.WriterTo] interface for [Import].
 func (i Import) WriteTo(w io.Writer) (n int64, err error) {
+	if in, ierr := w.Write([]byte(`import`)); ierr != nil {
+		err = ierr
+		return
+	} else {
+		n += int64(in)
+	}
 	if i.Static {
 		if sn, serr := w.Write([]byte(`static`)); serr != nil {
 			err = serr
@@ -1090,12 +1101,6 @@ func (i Import) WriteTo(w io.Writer) (n int64, err error) {
 		} else {
 			n += int64(sn)
 		}
-	}
-	if in, ierr := w.Write([]byte(`import`)); ierr != nil {
-		err = ierr
-		return
-	} else {
-		n += int64(in)
 	}
 	if qin, qierr := i.QualifiedIdentifier.WriteTo(w); qierr != nil {
 		err = qierr
@@ -2023,6 +2028,9 @@ func (EmptyStatement) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	return
 }
+
+// Implements [io.WriterTo] interface for [EmptyExpression].
+func (EmptyExpression) WriteTo(w io.Writer) (n int64, err error) { return }
 
 // Implements [io.WriterTo] interface for [Switch].
 func (s Switch) WriteTo(w io.Writer) (n int64, err error) {
@@ -3410,7 +3418,7 @@ func (cl CharLiteral) WriteTo(w io.Writer) (n int64, err error) {
 
 // Implements [io.WriterTo] interface for [StringLiteral].
 func (sl StringLiteral) WriteTo(w io.Writer) (n int64, err error) {
-	if sln, slerr := w.Write([]byte(`"` + sl.Value + `"`)); slerr != nil {
+	if sln, slerr := w.Write([]byte(`"` + strings.ReplaceAll(sl.Value, "\"", "\\\"") + `"`)); slerr != nil {
 		err = slerr
 		return
 	} else {

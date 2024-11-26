@@ -1,6 +1,8 @@
 package javast
 
-import "io"
+import (
+	"io"
+)
 
 // A Kind enumerates all kinds of nodes.
 type Kind int
@@ -47,6 +49,7 @@ const (
 	PRIMITIVE_TYPE                              // Used for instances of [PrimitiveTypeNode].
 	RETURN                                      // Used for instances of [ReturnNode].
 	EMPTY_STATEMENT                             // Used for instances of [EmptyStatementNode].
+	EMPTY_EXPRESSION                            // Used for instances of [EmptyExpressionNode].
 	SWITCH                                      // Used for instances of [SwitchNode].
 	SWITCH_EXPRESSION                           // Used for instances of [SwitchExpressionNode].
 	SYNCHRONIZED                                // Used for instances of [SynchronizedNode].
@@ -846,6 +849,12 @@ type DoWhileLoopNode interface {
 type EmptyStatementNode interface {
 	StatementNode
 	emptyStatementNode() // emptyStatementNode() ensures that only empty statement nodes can be assigned to an EmptyStatementNode.
+}
+
+// A tree node for an empty expression.
+type EmptyExpressionNode interface {
+	ExpressionNode
+	emptyExpressionNode() // emptyExpressionNode() ensures that only empty expression nodes can be assigned to an EmptyExpressionNode.
 }
 
 // A tree node for an "enhanced" "for" loop statement.

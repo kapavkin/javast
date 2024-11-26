@@ -316,7 +316,6 @@ func (imr InvokeMemberReference) GetMode() ReferenceMode { return INVOKE_REFEREN
 
 func (imr InvokeMemberReference) GetQualifierExpression() ExpressionNode {
 	return imr.QualifierExpression
-
 }
 func (imr InvokeMemberReference) GetName() *string                   { return &imr.Name }
 func (imr InvokeMemberReference) GetTypeArguments() []ExpressionNode { return imr.TypeArguments }
@@ -637,8 +636,7 @@ func (ParenthesizedPattern) patternNode()              {}
 func (ParenthesizedPattern) parenthesizedPatternNode() {}
 
 // Implements [DefaultCaseLabelNode].
-type DefaultCaseLabel struct {
-}
+type DefaultCaseLabel struct{}
 
 func (DefaultCaseLabel) GetKind() Kind { return DEFAULT_CASE_LABEL }
 
@@ -669,13 +667,21 @@ func (Return) statementNode() {}
 func (Return) returnNode()    {}
 
 // Implements [EmptyStatementNode].
-type EmptyStatement struct {
-}
+type EmptyStatement struct{}
 
 func (EmptyStatement) GetKind() Kind { return EMPTY_STATEMENT }
 
 func (EmptyStatement) statementNode()      {}
 func (EmptyStatement) emptyStatementNode() {}
+
+// Implements [EmptyExpressionNode].
+type EmptyExpression struct{}
+
+func (EmptyExpression) GetKind() Kind { return EMPTY_EXPRESSION }
+
+func (EmptyExpression) caseLabelNode()       {}
+func (EmptyExpression) expressionNode()      {}
+func (EmptyExpression) emptyExpressionNode() {}
 
 // Implements [SwitchNode].
 type Switch struct {
@@ -1500,8 +1506,7 @@ func (StringLiteral) expressionNode() {}
 func (StringLiteral) literalNode()    {}
 
 // Implements [LiteralNode] of kind [NULL_LITERAL].
-type NullLiteral struct {
-}
+type NullLiteral struct{}
 
 func (NullLiteral) GetKind() Kind { return NULL_LITERAL }
 
@@ -1512,8 +1517,7 @@ func (NullLiteral) expressionNode() {}
 func (NullLiteral) literalNode()    {}
 
 // Implements [WildcardNode] of kind [UNBOUNDED_WILDCARD].
-type UnboundedWildcard struct {
-}
+type UnboundedWildcard struct{}
 
 func (UnboundedWildcard) GetKind() Kind { return UNBOUNDED_WILDCARD }
 

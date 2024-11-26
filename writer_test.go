@@ -1,7 +1,7 @@
 package javast_test
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/kapavkin/javast"
@@ -21,7 +21,7 @@ func (sw *SpaceWriter) Write(p []byte) (n int, err error) {
 		n += len(p)
 		return
 	}
-	err = errors.New("sw is nil")
+	err = fmt.Errorf("sw is nil")
 	return
 }
 
@@ -1394,6 +1394,20 @@ func TestEmptyStatement_WriteTo(t *testing.T) {
 	}
 	got := sw.String()
 	want := ";"
+	if got != want {
+		t.Errorf("sw.String() = %s, want %s", got, want)
+	}
+}
+
+func TestEmptyExpression_WriteTo(t *testing.T) {
+	t.Parallel()
+	sw := SpaceWriter{}
+	ex := javast.EmptyExpression{}
+	if _, err := ex.WriteTo(&sw); err != nil {
+		t.Error(err)
+	}
+	got := sw.String()
+	want := ""
 	if got != want {
 		t.Errorf("sw.String() = %s, want %s", got, want)
 	}
